@@ -81,7 +81,7 @@ export function generateStaticParams() { return Object.keys(concepts).map((slug)
 export default async function ConceptPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params; const concept = concepts[slug]; if (!concept) notFound();
   return <main className="detail-page" style={{"--accent":concept.accent} as React.CSSProperties}>
-    <nav className="nav detail-nav"><a className="back-link" href="/#concepts">← All concepts</a><span>DS / Simplified</span><a href="https://github.com/navant-dev/distributed" target="_blank" rel="noreferrer">GitHub ↗</a></nav>
+    <nav className="nav detail-nav"><a className="back-link" href="../../#concepts">← All concepts</a><span>DS / Simplified</span><a href="https://github.com/navant-dev/distributed" target="_blank" rel="noreferrer">GitHub ↗</a></nav>
     <header className="detail-hero">
       <div><p className="detail-kicker">Visual one-pager · {concept.subtitle}</p><h1>{concept.title}</h1><p className="detail-definition">{concept.definition}</p></div>
       <div className="cluster-visual"><i className="cluster-main">01</i><i>02</i><i>03</i><i>04</i><span className="signal s1"/><span className="signal s2"/></div>
@@ -95,7 +95,7 @@ export default async function ConceptPage({ params }: { params: Promise<{ slug: 
       <article className="info-panel example-panel"><PanelTitle n="6" title="In practice"/><div className="example-box"><span>Example</span><h2>{concept.example.title}</h2><p>{concept.example.text}</p></div></article>
       <article className="takeaway-panel"><span>The one thing to remember</span><blockquote>“{concept.takeaway}”</blockquote><div>{concept.terms.map(x=><i key={x}>{x}</i>)}</div></article>
     </section>
-    <footer className="detail-footer"><a href="/#concepts">← Back to all concepts</a><span>Distributed Systems Simplified</span><a href="https://navant.dev">navant.dev ↗</a></footer>
+    <footer className="detail-footer"><a href="../../#concepts">← Back to all concepts</a><span>Distributed Systems Simplified</span><a href="https://navant.dev">navant.dev ↗</a></footer>
   </main>;
 }
 

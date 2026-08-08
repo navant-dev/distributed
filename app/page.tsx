@@ -134,7 +134,7 @@ export default function Home() {
         </div>
         <div className="concept-grid">
           {concepts.map((concept) => (
-            <a className={`concept-card ${concept.visual}`} href={`/concepts/${concept.visual}`} key={concept.title}>
+            <a className={`concept-card ${concept.visual}`} href={`concepts/${concept.visual}/`} key={concept.title}>
               <div className="card-top"><span>{concept.number}</span><span>{concept.eyebrow}</span></div>
               <MiniDiagram type={concept.visual} />
               <div className="card-copy">

@@ -24,4 +24,4 @@ Run `npm run build` to create a static export in `out/`.
 
 ## Hosting
 
-The site is deployed to GitHub Pages by `.github/workflows/deploy-pages.yml` after changes reach `main`. The custom domain is configured through `public/CNAME` as `navant.dev`.
+The site is deployed to GitHub Pages by `.github/workflows/deploy-pages.yml` after changes reach `main`.
