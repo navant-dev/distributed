@@ -4,7 +4,7 @@ import { sitePath } from "@/utils/paths";
 
 export const GET: APIRoute = async () => {
   const topics = await getCollection("topics");
-  const index = topics.map((topic) => ({
+  const index: Array<{ title: string; description: string; category: string; tags: string[]; summary: string; url: string }> = topics.map((topic) => ({
     title: topic.data.title,
     description: topic.data.description,
     category: topic.data.category,
@@ -12,5 +12,13 @@ export const GET: APIRoute = async () => {
     summary: (topic.body ?? "").replace(/<[^>]+>|[#*_`\[\]()]/g, " ").replace(/\s+/g, " ").trim().slice(0, 360),
     url: sitePath(`/topics/${topic.id}/`),
   }));
+  index.push({
+    title: "Interview Prep",
+    description: "Practice distributed-systems questions by difficulty, category, and failure scenario.",
+    category: "Practice",
+    tags: ["interview", "scenarios", "system design"],
+    summary: "Question bank with revealable answers for fundamental, intermediate, senior, Staff+, and manager interviews.",
+    url: sitePath("/interview/"),
+  });
   return new Response(JSON.stringify(index), { headers: { "Content-Type": "application/json; charset=utf-8" } });
 };

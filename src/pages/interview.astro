@@ -1,0 +1,81 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { interviewLevels, interviewQuestions } from "@/data/interview";
+import { sitePath } from "@/utils/paths";
+const categories = [...new Set(interviewQuestions.map((item) => item.category))];
+const scenarios = interviewQuestions.filter((item) => item.type === "scenario").length;
+---
+<BaseLayout title="Distributed Systems Interview Prep — DistillSys" description="Practice distributed-systems interview questions by difficulty, category, and real-world failure scenario.">
+  <main id="main-content" class="interview-main">
+    <header class="interview-hero">
+      <div><span class="eyebrow">Phase 6 · Interview mode</span><h1>Reason out loud.</h1><p>Practice the decisions behind reliable systems—not trivia. Form an answer, state your assumptions, then reveal the reasoning and the follow-up signal an interviewer is listening for.</p></div>
+      <aside aria-label="Question bank summary"><strong>{interviewQuestions.length}</strong><span>questions</span><strong>{scenarios}</strong><span>failure scenarios</span><strong>{interviewLevels.length}</strong><span>difficulty levels</span></aside>
+    </header>
+
+    <section class="interview-workspace" aria-labelledby="question-bank-title" data-interview-bank>
+      <header class="interview-toolbar">
+        <div><span class="eyebrow">Question bank</span><h2 id="question-bank-title">Choose your depth</h2></div>
+        <label class="interview-search"><span class="sr-only">Search interview questions</span><input type="search" data-interview-query placeholder="Search questions…" /></label>
+      </header>
+      <div class="interview-filters" aria-label="Filter by difficulty">
+        <button type="button" class="active" data-level="all" aria-pressed="true">All <span>{interviewQuestions.length}</span></button>
+        {interviewLevels.map((level) => <button type="button" data-level={level.toLowerCase()} aria-pressed="false">{level} <span>{interviewQuestions.filter((item) => item.level === level).length}</span></button>)}
+      </div>
+      <div class="interview-subfilters">
+        <label>Category<select data-category><option value="all">All categories</option>{categories.map((category) => <option value={category.toLowerCase()}>{category}</option>)}</select></label>
+        <label>Question type<select data-question-type><option value="all">Concepts and scenarios</option><option value="scenario">Failure scenarios</option><option value="concept">Concept questions</option></select></label>
+        <p data-interview-count aria-live="polite">Showing {interviewQuestions.length} questions</p>
+      </div>
+
+      <div class="interview-list">
+        {interviewQuestions.map((item, index) => (
+          <article data-interview-card data-level={item.level.toLowerCase()} data-category={item.category.toLowerCase()} data-type={item.type} data-search={`${item.question} ${item.answer} ${item.category} ${item.level}`.toLowerCase()}>
+            <div class="question-meta"><span>{String(index + 1).padStart(2, "0")}</span><b>{item.level}</b><small>{item.category}</small>{item.type === "scenario" && <i>Scenario</i>}</div>
+            <h3>{item.question}</h3>
+            <p class="thinking-prompt"><span aria-hidden="true">↳</span> State the invariant, failure assumption, and trade-off before revealing the answer.</p>
+            <details>
+              <summary><span>Reveal answer</span><i aria-hidden="true">+</i></summary>
+              <div class="answer-copy"><p>{item.answer}</p><aside><small>Follow-up signal</small><p>{item.probe}</p></aside><a href={sitePath(item.related.href)}>Refresh: {item.related.label} →</a></div>
+            </details>
+          </article>
+        ))}
+      </div>
+      <div class="library-empty" data-interview-empty hidden><b>No matching questions.</b><span>Try another difficulty, category, or search phrase.</span></div>
+      <noscript><p class="interview-noscript">All questions and answers remain available without JavaScript. Filters require JavaScript, but each answer can still be opened with its Reveal answer control.</p></noscript>
+    </section>
+  </main>
+  <script>
+    const bank = document.querySelector('[data-interview-bank]');
+    const cards = [...(bank?.querySelectorAll('[data-interview-card]') || [])];
+    const levelButtons = [...(bank?.querySelectorAll('[data-level]') || [])];
+    const categorySelect = bank?.querySelector('[data-category]');
+    const typeSelect = bank?.querySelector('[data-question-type]');
+    const queryInput = bank?.querySelector('[data-interview-query]');
+    const count = bank?.querySelector('[data-interview-count]');
+    const empty = bank?.querySelector('[data-interview-empty]');
+    let level = 'all';
+    const applyFilters = () => {
+      const category = categorySelect instanceof HTMLSelectElement ? categorySelect.value : 'all';
+      const type = typeSelect instanceof HTMLSelectElement ? typeSelect.value : 'all';
+      const query = queryInput instanceof HTMLInputElement ? queryInput.value.trim().toLowerCase() : '';
+      let visible = 0;
+      cards.forEach((card) => {
+        if (!(card instanceof HTMLElement)) return;
+        const show = (level === 'all' || card.dataset.level === level) && (category === 'all' || card.dataset.category === category) && (type === 'all' || card.dataset.type === type) && (!query || card.dataset.search?.includes(query));
+        card.hidden = !show;
+        if (show) visible++;
+      });
+      if (count) count.textContent = `Showing ${visible} question${visible === 1 ? '' : 's'}`;
+      if (empty instanceof HTMLElement) empty.hidden = visible !== 0;
+    };
+    levelButtons.forEach((button) => button.addEventListener('click', () => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      level = button.dataset.level || 'all';
+      levelButtons.forEach((item) => { const selected = item === button; item.classList.toggle('active', selected); item.setAttribute('aria-pressed', String(selected)); });
+      applyFilters();
+    }));
+    categorySelect?.addEventListener('change', applyFilters);
+    typeSelect?.addEventListener('change', applyFilters);
+    queryInput?.addEventListener('input', applyFilters);
+  </script>
+</BaseLayout>

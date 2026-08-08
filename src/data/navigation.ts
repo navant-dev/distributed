@@ -37,6 +37,6 @@ export const primaryNav = [
   { label: "Roadmap", href: "/roadmap/" },
   { label: "Cheatsheets", href: "/#coming-soon" },
   { label: "System Designs", href: "/#coming-soon" },
-  { label: "Interview Prep", href: "/#coming-soon" },
+  { label: "Interview Prep", href: "/interview/" },
   { label: "Glossary", href: "/glossary/" },
 ] as const;

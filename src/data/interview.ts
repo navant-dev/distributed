@@ -1,0 +1,167 @@
+export const interviewLevels = ["Fundamental", "Intermediate", "Senior", "Staff+", "Manager"] as const;
+
+export type InterviewLevel = (typeof interviewLevels)[number];
+
+export type InterviewQuestion = {
+  id: string;
+  category: string;
+  level: InterviewLevel;
+  type: "concept" | "scenario";
+  question: string;
+  answer: string;
+  probe: string;
+  related: { label: string; href: string };
+};
+
+export const interviewQuestions: InterviewQuestion[] = [
+  {
+    id: "partial-failure",
+    category: "Foundations",
+    level: "Fundamental",
+    type: "concept",
+    question: "Why is a partial failure harder to handle than a total process crash?",
+    answer: "A caller cannot reliably distinguish a slow dependency, a lost request, a lost response, and a crashed process. The operation may have succeeded even when the caller times out, so recovery needs deadlines, operation identity, and safe retry semantics.",
+    probe: "Ask what evidence would let the caller resolve an ambiguous outcome.",
+    related: { label: "Distributed systems fundamentals", href: "/topics/foundations/distributed-systems/" },
+  },
+  {
+    id: "cap-choice",
+    category: "Consistency",
+    level: "Fundamental",
+    type: "concept",
+    question: "During a network partition, what choice does CAP force a replicated system to make?",
+    answer: "For operations that cross the partition, the system must either reject or delay some work to preserve consistency, or accept work on both sides and allow temporary inconsistency. CAP does not require choosing consistency or availability during normal operation.",
+    probe: "Look for a distinction between partition-time behavior and everyday latency trade-offs.",
+    related: { label: "CAP theorem", href: "/topics/consistency/cap-theorem/" },
+  },
+  {
+    id: "replication-purpose",
+    category: "Replication",
+    level: "Fundamental",
+    type: "concept",
+    question: "What does replication improve, and what does it not guarantee by itself?",
+    answer: "Replication can improve durability, read capacity, locality, and availability. It does not by itself establish which copy is authoritative, provide consensus, prevent stale reads, or define conflict resolution.",
+    probe: "Ask the candidate to separate copying state from agreeing on authority.",
+    related: { label: "Replication", href: "/topics/replication/replication/" },
+  },
+  {
+    id: "quorum-linearizability",
+    category: "Consistency",
+    level: "Intermediate",
+    type: "concept",
+    question: "Why does R + W > N not automatically guarantee linearizability?",
+    answer: "Overlap only ensures a read quorum intersects a successful write quorum. The read still needs version metadata and a rule for selecting the newest valid value, while concurrent writes, sloppy quorums, clock assumptions, and failures can violate real-time ordering.",
+    probe: "Strong answers mention both quorum overlap and the protocol used to order versions.",
+    related: { label: "Quorums", href: "/topics/consensus/quorums/" },
+  },
+  {
+    id: "retry-idempotency",
+    category: "Reliability",
+    level: "Intermediate",
+    type: "scenario",
+    question: "A payment request times out after reaching the server. How would you make retrying safe?",
+    answer: "Give the logical payment a stable idempotency key, persist the key and outcome atomically with the side effect, and return the recorded outcome for duplicates. Bound retries with deadlines, backoff, jitter, and a retry budget; do not assume a timeout means failure.",
+    probe: "Ask where the deduplication record lives and how long it must be retained.",
+    related: { label: "Failure and retry patterns", href: "/topics/reliability/failure-retry-patterns/" },
+  },
+  {
+    id: "consistent-hashing",
+    category: "Partitioning",
+    level: "Intermediate",
+    type: "concept",
+    question: "What problem does consistent hashing solve, and why are virtual nodes useful?",
+    answer: "It limits key movement when membership changes by moving only neighboring ranges. Virtual nodes give each physical node many positions on the ring, smoothing uneven distribution and allowing capacity-weighted ownership, at the cost of more metadata and range movement.",
+    probe: "Ask how the design handles replication and a hot key that hashing cannot spread.",
+    related: { label: "Consistent hashing", href: "/topics/partitioning/consistent-hashing/" },
+  },
+  {
+    id: "raft-ambiguous-write",
+    category: "Consensus",
+    level: "Senior",
+    type: "scenario",
+    question: "A Raft leader commits a write, then crashes before responding. What should the client do?",
+    answer: "The result is ambiguous to the client but committed in the cluster. The client may retry through the new leader using a stable operation ID or client sequence number; the state machine must deduplicate the retry and return the original result rather than apply it twice.",
+    probe: "Ask why a new leader cannot simply declare the timed-out operation unsuccessful.",
+    related: { label: "Raft consensus", href: "/topics/consensus/raft/" },
+  },
+  {
+    id: "hot-partition",
+    category: "Partitioning",
+    level: "Senior",
+    type: "scenario",
+    question: "One shard receives 80% of traffic. How do you diagnose and mitigate it?",
+    answer: "Measure load by key and operation, identify whether the cause is a hot key, poor partition key, range hotspot, or uneven capacity, then choose a targeted response: cache or replicate reads, split or salt the keyspace, isolate tenants, rate-limit producers, or redesign the access pattern. Rebalancing alone does not split one indivisible hot key.",
+    probe: "Look for mitigation that preserves ordering and query semantics where they matter.",
+    related: { label: "Consistent hashing", href: "/topics/partitioning/consistent-hashing/" },
+  },
+  {
+    id: "two-phase-coordinator",
+    category: "Transactions",
+    level: "Senior",
+    type: "scenario",
+    question: "What happens when a two-phase commit coordinator fails after participants prepare?",
+    answer: "Prepared participants have promised not to abort independently and may remain blocked while holding locks or reserved resources. Recovery requires the durable coordinator log, a replicated coordinator, or a termination protocol; the core availability cost is uncertainty between prepare and the final decision.",
+    probe: "Ask how presumed-abort, presumed-commit, or consensus changes recovery behavior.",
+    related: { label: "Two-phase commit", href: "/topics/transactions/two-phase-commit/" },
+  },
+  {
+    id: "consumer-delivery",
+    category: "Messaging",
+    level: "Senior",
+    type: "concept",
+    question: "How do you design an effectively-once outcome on top of at-least-once delivery?",
+    answer: "Treat duplicate delivery as normal. Use a stable event ID and make the state change and consumed-ID record atomic, or make the operation naturally idempotent. Commit the consumer offset only after the durable outcome, and make external side effects independently deduplicated or transactional.",
+    probe: "Ask where the atomic boundary ends when an external email or payment provider is involved.",
+    related: { label: "Distributed logs", href: "/topics/messaging/distributed-logs/" },
+  },
+  {
+    id: "multi-region-contract",
+    category: "Architecture",
+    level: "Staff+",
+    type: "scenario",
+    question: "Design a multi-region write path for a product that needs low latency and strict uniqueness.",
+    answer: "Start by making the invariant explicit. Route uniqueness-sensitive operations to one consensus group or home region, while allowing local reads and commutative or partitioned writes elsewhere. Define failure behavior, fencing, conflict policy, RPO/RTO, and what the product does when the authority region is unreachable.",
+    probe: "Strong answers negotiate the product contract instead of promising zero latency, full availability, and global linearizability together.",
+    related: { label: "PACELC", href: "/topics/consistency/pacelc/" },
+  },
+  {
+    id: "schema-migration",
+    category: "Architecture",
+    level: "Staff+",
+    type: "scenario",
+    question: "How would you roll out an incompatible data-model change across many services without downtime?",
+    answer: "Use an expand-and-contract sequence: introduce backward-compatible storage and readers, dual-write or backfill with observability, migrate traffic, verify invariants, then remove the old representation. Every step must tolerate mixed versions and be independently reversible.",
+    probe: "Ask how they detect and repair divergence during dual writes.",
+    related: { label: "Replication", href: "/topics/replication/replication/" },
+  },
+  {
+    id: "overload-control",
+    category: "Reliability",
+    level: "Staff+",
+    type: "scenario",
+    question: "A dependency slows down and retries are causing a cascading failure. What control loop do you introduce?",
+    answer: "Propagate deadlines, cap concurrency, add jittered backoff and retry budgets, trip circuit breakers on useful signals, shed low-priority work, and preserve capacity for recovery probes. Validate the loop with queue depth, saturation, tail latency, and retry amplification—not only error rate.",
+    probe: "Ask how the controls avoid synchronized recovery and permanent open circuits.",
+    related: { label: "Failure and retry patterns", href: "/topics/reliability/failure-retry-patterns/" },
+  },
+  {
+    id: "consistency-contract",
+    category: "Leadership",
+    level: "Manager",
+    type: "scenario",
+    question: "How do you decide whether a feature really needs strong consistency?",
+    answer: "Translate consistency into user-visible invariants and business risk: what stale or conflicting state is possible, who is harmed, how it is detected, and whether it can be repaired. Compare that cost with the latency, availability, operational, and regional constraints of stronger coordination.",
+    probe: "Look for a decision record with explicit invariants, failure modes, owners, and measurable acceptance criteria.",
+    related: { label: "Consistency models", href: "/topics/consistency/consistency-models/" },
+  },
+  {
+    id: "incident-priorities",
+    category: "Leadership",
+    level: "Manager",
+    type: "scenario",
+    question: "During a distributed-systems incident, how do you balance recovery speed with data safety?",
+    answer: "Declare the protected invariant, establish one incident authority, stop uncontrolled changes, and choose reversible mitigations that reduce blast radius. Separate service restoration from reconciliation, record ambiguous operations, communicate the customer impact, and define evidence required before relaxing safety controls.",
+    probe: "Ask for concrete stop conditions and who can authorize a data-risking action.",
+    related: { label: "Distributed systems fundamentals", href: "/topics/foundations/distributed-systems/" },
+  },
+];
