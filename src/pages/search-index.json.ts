@@ -20,5 +20,13 @@ export const GET: APIRoute = async () => {
     summary: "Question bank with revealable answers for fundamental, intermediate, senior, Staff+, and manager interviews.",
     url: sitePath("/interview/"),
   });
+  index.push({
+    title: "Distributed Systems Cheatsheets",
+    description: "Eight printable decision guides spanning the complete learning roadmap.",
+    category: "Reference",
+    tags: ["cheatsheets", "printable", "decision guide"],
+    summary: "Consistency, consensus, partitioning, transactions, storage, messaging, reliability, and multi-region rules of thumb.",
+    url: sitePath("/cheatsheets/"),
+  });
   return new Response(JSON.stringify(index), { headers: { "Content-Type": "application/json; charset=utf-8" } });
 };

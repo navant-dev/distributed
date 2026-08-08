@@ -1,0 +1,27 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { cheatsheets } from "@/data/cheatsheets";
+import { sitePath } from "@/utils/paths";
+---
+<BaseLayout title="Distributed Systems Cheatsheets — DistillSys" description="Eight printable distributed-systems decision guides for consistency, consensus, partitioning, transactions, storage, messaging, reliability, and multi-region architecture.">
+  <main id="main-content" class="cheatsheet-main">
+    <header class="cheatsheet-hero">
+      <div><span class="eyebrow">Eight one-page decision guides</span><h1>Keep the hard parts close.</h1><p>Print the full set, or keep this page open during design reviews. Each sheet compresses one roadmap stage into the rules, sequence, and failure warning worth remembering.</p></div>
+      <button class="btn btn-primary" type="button" data-print-cheatsheets>Print all cheatsheets <span aria-hidden="true">↗</span></button>
+    </header>
+    <nav class="cheatsheet-jump" aria-label="Cheatsheet sections">{cheatsheets.map((sheet) => <a href={`#${sheet.id}`}><span>{sheet.number}</span>{sheet.title}</a>)}</nav>
+    <div class="cheatsheet-grid">
+      {cheatsheets.map((sheet) => (
+        <article class="cheatsheet-card" id={sheet.id}>
+          <header><span>{sheet.number}</span><div><small>DistillSys field note</small><h2>{sheet.title}</h2></div></header>
+          <p class="cheatsheet-prompt">{sheet.prompt}</p>
+          <div class="cheatsheet-flow" aria-label={`${sheet.title} sequence`}>{sheet.flow.map((step, index) => <><b>{step}</b>{index < sheet.flow.length - 1 && <i aria-hidden="true">↓</i>}</>)}</div>
+          <section><h3>Rules of thumb</h3><ul>{sheet.rules.map((rule) => <li>{rule}</li>)}</ul></section>
+          <aside><small>Failure warning</small><p>{sheet.warning}</p></aside>
+          <a href={sitePath(sheet.href)}>Open the full lesson →</a>
+        </article>
+      ))}
+    </div>
+  </main>
+  <script>document.querySelector('[data-print-cheatsheets]')?.addEventListener('click', () => window.print());</script>
+</BaseLayout>
