@@ -1,0 +1,20 @@
+<section class="interactive-lab" data-quorum-lab aria-labelledby="quorum-lab-title">
+  <header><div><span class="lab-kicker">Interactive lab</span><h2 id="quorum-lab-title">Quorum calculator</h2></div><p>Adjust the replica, read, and write counts. The overlap and availability implications update instantly.</p></header>
+  <div class="lab-grid quorum-lab-grid">
+    <form class="lab-controls"><label>Replicas <b data-n-value>5</b><input data-n type="range" min="3" max="9" value="5" /></label><label>Read quorum <b data-r-value>3</b><input data-r type="range" min="1" max="5" value="3" /></label><label>Write quorum <b data-w-value>3</b><input data-w type="range" min="1" max="5" value="3" /></label></form>
+    <div class="lab-stage"><div class="quorum-equation"><b data-equation>3 + 3 &gt; 5</b><span data-verdict>Read and write quorums overlap.</span></div><div class="interactive-nodes" data-quorum-nodes aria-label="Replica quorum visualization"></div><div class="lab-findings" data-findings aria-live="polite"></div></div>
+  </div>
+  <noscript><p class="lab-noscript">Example: N=5, R=3, W=3 gives R+W&gt;N and W&gt;N/2, so read/write and write/write quorums overlap.</p></noscript>
+</section>
+<script>
+  const quorumLab = document.querySelector('[data-quorum-lab]');
+  if (quorumLab instanceof HTMLElement) {
+    const n = quorumLab.querySelector('[data-n]') as HTMLInputElement; const r = quorumLab.querySelector('[data-r]') as HTMLInputElement; const w = quorumLab.querySelector('[data-w]') as HTMLInputElement;
+    const render = () => { const N=+n.value; r.max=w.max=String(N); if(+r.value>N)r.value=String(N); if(+w.value>N)w.value=String(N); const R=+r.value,W=+w.value;
+      quorumLab.querySelector('[data-n-value]')!.textContent=String(N); quorumLab.querySelector('[data-r-value]')!.textContent=String(R); quorumLab.querySelector('[data-w-value]')!.textContent=String(W); quorumLab.querySelector('[data-equation]')!.textContent=`${R} + ${W} ${R+W>N?'>':'≤'} ${N}`;
+      quorumLab.querySelector('[data-verdict]')!.textContent=R+W>N?'Every read set overlaps every successful write set.':'A read may miss every replica that accepted the latest write.';
+      const nodes=quorumLab.querySelector('[data-quorum-nodes]')!; nodes.replaceChildren(); for(let i=1;i<=N;i++){const node=document.createElement('span');node.textContent=String(i);node.classList.toggle('read',i<=R);node.classList.toggle('write',i>N-W);node.setAttribute('aria-label',`Replica ${i}${i<=R?' in read quorum':''}${i>N-W?' in write quorum':''}`);nodes.append(node)}
+      quorumLab.querySelector('[data-findings]')!.textContent=`Tolerates up to ${N-W} unavailable replica${N-W===1?'':'s'} for writes and ${N-R} for reads. ${W>N/2?'Write quorums overlap.':'Competing write quorums may not overlap.'}`;
+    }; [n,r,w].forEach(input=>input.addEventListener('input',render)); render();
+  }
+</script>

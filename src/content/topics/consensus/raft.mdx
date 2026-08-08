@@ -18,6 +18,7 @@ import FailureScenario from "@/components/content/FailureScenario.astro";
 import TradeoffTable from "@/components/content/TradeoffTable.astro";
 import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
 import ManagerLens from "@/components/content/ManagerLens.astro";
+import RaftElectionPlayground from "@/components/interactive/RaftElectionPlayground.astro";
 
 <QuickRefresher>
 Raft elects one leader to order commands. The leader appends each command to its log, replicates it to followers, and marks it committed after a majority stores it. Every healthy node eventually applies the same committed log in the same order.
@@ -38,6 +39,10 @@ Any two majorities share at least one node. That overlap carries knowledge from 
 3. **Replicate** — the leader sends the entry to followers using `AppendEntries`.
 4. **Commit** — after a majority acknowledges, the entry becomes committed.
 5. **Apply** — each node applies committed entries to its state machine in order.
+
+## Run an election
+
+<RaftElectionPlayground />
 
 <TradeoffTable rows={[
   { choice: "3-node cluster", gain: "Tolerates one failure with low coordination cost", cost: "No progress after two failures" },

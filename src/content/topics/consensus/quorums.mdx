@@ -18,6 +18,7 @@ import FailureScenario from "@/components/content/FailureScenario.astro";
 import TradeoffTable from "@/components/content/TradeoffTable.astro";
 import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
 import ManagerLens from "@/components/content/ManagerLens.astro";
+import QuorumCalculator from "@/components/interactive/QuorumCalculator.astro";
 
 <QuickRefresher>With **N** replicas, a write waits for **W** acknowledgements and a read consults **R** replicas. When `R + W > N`, every read set overlaps every successful write set. When `W > N/2`, two successful write quorums must overlap.</QuickRefresher>
 
@@ -26,6 +27,10 @@ import ManagerLens from "@/components/content/ManagerLens.astro";
 Waiting for every replica makes one slow node block progress. Waiting for one replica risks stale or conflicting state. Quorums provide a tunable middle ground between coordination cost and fault tolerance.
 
 <KeyInsight title="Overlap is necessary, not sufficient">A read must identify the newest valid version among its responses, and conflicting writes need a deterministic rule. `R + W > N` alone does not magically provide linearizability.</KeyInsight>
+
+## Explore quorum choices
+
+<QuorumCalculator />
 
 <TradeoffTable rows={[
   {choice:"Large W",gain:"More durable and fresher acknowledged writes",cost:"Higher write latency and lower write availability"},

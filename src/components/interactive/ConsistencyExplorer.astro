@@ -1,0 +1,14 @@
+<section class="interactive-lab" data-consistency-lab aria-labelledby="consistency-lab-title">
+  <header><div><span class="lab-kicker">Interactive lab</span><h2 id="consistency-lab-title">Consistency explorer</h2></div><p>Write to one replica, propagate the version, and see what each read contract may return.</p></header>
+  <div class="lab-grid">
+    <div class="lab-controls"><label>Read contract<select data-model><option value="strong">Strong</option><option value="eventual">Eventual</option><option value="session">Read-your-writes</option></select></label><div class="lab-button-row"><button type="button" data-write>Write next version</button><button type="button" data-propagate>Propagate one step</button><button type="button" data-reset>Reset</button></div></div>
+    <div class="lab-stage"><div class="replica-cards" data-replicas></div><div class="read-result" aria-live="polite"><small>Possible read</small><b data-read-value>v1</b><p data-read-explanation>Strong reads coordinate to return the latest committed version.</p></div></div>
+  </div>
+  <noscript><p class="lab-noscript">Core model: strong reads coordinate for the latest committed value; eventual reads may observe a lagging replica; read-your-writes preserves the writer’s session.</p></noscript>
+</section>
+<script>
+  const consistencyLab=document.querySelector('[data-consistency-lab]');
+  if(consistencyLab instanceof HTMLElement){let latest=1;let replicas=[1,1,1];let cursor=1;const model=consistencyLab.querySelector('[data-model]') as HTMLSelectElement;
+    const render=()=>{const cards=consistencyLab.querySelector('[data-replicas]')!;cards.replaceChildren();replicas.forEach((version,index)=>{const card=document.createElement('div');card.className='replica-card';card.innerHTML=`<small>Replica ${String.fromCharCode(65+index)}</small><b>v${version}</b><span>${version===latest?'current':'lagging'}</span>`;cards.append(card)});let value=latest;let explanation='Strong reads coordinate to return the latest committed version.';if(model.value==='eventual'){value=Math.min(...replicas);explanation='An eventual read may hit a lagging replica until propagation completes.'}if(model.value==='session'){value=latest;explanation='The writer’s session carries enough context to avoid reading an older version.'}consistencyLab.querySelector('[data-read-value]')!.textContent=`v${value}`;consistencyLab.querySelector('[data-read-explanation]')!.textContent=explanation};
+    consistencyLab.querySelector('[data-write]')?.addEventListener('click',()=>{latest++;replicas[0]=latest;cursor=1;render()});consistencyLab.querySelector('[data-propagate]')?.addEventListener('click',()=>{if(cursor<replicas.length){replicas[cursor]=latest;cursor++}render()});consistencyLab.querySelector('[data-reset]')?.addEventListener('click',()=>{latest=1;replicas=[1,1,1];cursor=1;render()});model.addEventListener('change',render);render();}
+</script>
