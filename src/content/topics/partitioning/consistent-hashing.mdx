@@ -1,0 +1,71 @@
+---
+title: "Consistent Hashing"
+description: "Partition keys across changing nodes while minimizing how much data moves when the cluster scales."
+category: "Partitioning"
+order: 3
+difficulty: "intermediate"
+readingTime: 6
+tags: ["partitioning", "hashing", "rebalancing", "hotspots"]
+related: ["consistency/cap-theorem"]
+featured: true
+diagram: "hash-ring"
+mentalModel: "Hash nodes and keys onto a ring → walk clockwise to the first owner"
+remember: "Consistent hashing limits movement when membership changes. Virtual nodes and replication make that movement balanced and resilient."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>
+Consistent hashing maps both nodes and keys into the same hash space. A key belongs to the next node clockwise. Adding or removing a node changes ownership for only a neighboring slice instead of remapping nearly every key.
+</QuickRefresher>
+
+## What problem does it solve?
+
+With `hash(key) % N`, changing the node count changes the result for most keys. That creates a massive reshuffle precisely when a cluster is already scaling or recovering. Consistent hashing stabilizes ownership across membership changes.
+
+<KeyInsight title="The ring is a lookup model, not the whole design">
+A useful production design also needs virtual nodes, replication, failure detection, capacity weighting, and controlled transfer. The ring only answers: **who should own this position?**
+</KeyInsight>
+
+## How it works
+
+1. Hash each physical node onto multiple positions called **virtual nodes**.
+2. Hash each key into the same numeric space.
+3. Walk clockwise from the key to its first node position.
+4. Replicate to the next distinct physical nodes for resilience.
+5. When membership changes, transfer only affected ranges.
+
+<TradeoffTable rows={[
+  { choice: "More virtual nodes", gain: "Smoother distribution and capacity weighting", cost: "More metadata and range movement" },
+  { choice: "Fewer virtual nodes", gain: "Simpler ownership maps", cost: "Higher risk of uneven load" },
+  { choice: "Replication around ring", gain: "Node-failure tolerance", cost: "Correlated placement unless failure domains are considered" }
+]} />
+
+## What happens if?
+
+<FailureScenario title="A node leaves unexpectedly">
+Its successor temporarily owns the failed ranges and may receive a sudden traffic surge. Replicas preserve availability, but recovery must be rate-limited to avoid turning one failure into overload.
+</FailureScenario>
+
+<FailureScenario title="One key receives 40% of requests">
+Even perfect partition balance cannot split a single hot key. The system needs key replication, request coalescing, caching, or a domain-specific way to shard that item.
+</FailureScenario>
+
+## Real systems
+
+Amazon Dynamo popularized the model for distributed key-value stores. Variants appear in Cassandra, DynamoDB, caches, proxies, and request routers. Modern systems often use centrally managed range maps when they need tighter placement control.
+
+<InterviewQuestion level="Senior" question="Why do virtual nodes improve consistent hashing?">
+Physical nodes receive multiple small, scattered ranges rather than one contiguous slice. This reduces statistical skew, makes rebalancing more granular, and allows stronger machines to receive proportionally more positions.
+</InterviewQuestion>
+
+<ManagerLens>
+- Does rebalancing have bandwidth and concurrency limits?
+- Can operators see per-range size, traffic, and replica health?
+- Does placement respect zones and racks, not just node identity?
+- How are hot keys distinguished from generally hot partitions?
+</ManagerLens>

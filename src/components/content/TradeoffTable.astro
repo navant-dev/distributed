@@ -1,0 +1,4 @@
+---
+const { rows = [] } = Astro.props;
+---
+<section class="tradeoffs"><div class="section-intro"><small>Decision guide</small><h2>Key trade-offs</h2></div><div class="table-wrap"><table><thead><tr><th>Choice</th><th>What you gain</th><th>What it costs</th></tr></thead><tbody>{rows.map((row: {choice:string; gain:string; cost:string}) => <tr><th>{row.choice}</th><td class="gain">{row.gain}</td><td class="cost">{row.cost}</td></tr>)}</tbody></table></div></section>

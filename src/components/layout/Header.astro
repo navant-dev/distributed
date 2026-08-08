@@ -1,0 +1,18 @@
+---
+import { primaryNav } from "@/data/navigation";
+import { sitePath } from "@/utils/paths";
+---
+<header class="site-header">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <a class="wordmark" href={sitePath("/")} aria-label="DistillSys home"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><b>Distill</b><strong>Sys</strong></a>
+  <nav class="desktop-nav" aria-label="Primary navigation">
+    {primaryNav.map((item) => <a href={sitePath(item.href)}>{item.label}</a>)}
+  </nav>
+  <div class="header-actions">
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change color theme"><span aria-hidden="true">◐</span></button>
+    <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-navigation"><span></span><span></span><span></span><span class="sr-only">Open navigation</span></button>
+  </div>
+  <nav class="mobile-nav" id="mobile-navigation" data-mobile-nav aria-label="Mobile navigation" hidden>
+    {primaryNav.map((item) => <a href={sitePath(item.href)}>{item.label}</a>)}
+  </nav>
+</header>

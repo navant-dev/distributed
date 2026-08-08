@@ -1,0 +1,15 @@
+---
+import { curriculum } from "@/data/navigation";
+import { sitePath } from "@/utils/paths";
+const { currentPath = "" } = Astro.props;
+---
+<aside class="curriculum-sidebar" aria-label="Curriculum">
+  <div class="sidebar-heading"><span>Curriculum</span><small>3 of 12 live</small></div>
+  {curriculum.map((section) => (
+    <section>
+      <h2>{section.group}</h2>
+      <ul>{section.items.map((item) => <li><a href={sitePath(item.href)} class:list={[currentPath === item.href && "active", !item.ready && "planned"]}><span>{item.label}</span>{item.ready ? <i aria-label="Available"></i> : <small>Soon</small>}</a></li>)}</ul>
+    </section>
+  ))}
+  <div class="sidebar-progress"><div><span>Your progress</span><b data-progress-label>0%</b></div><progress value="0" max="3" data-progress-bar>0 of 3</progress><small>Stored only in this browser</small></div>
+</aside>
