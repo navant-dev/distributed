@@ -1,0 +1,30 @@
+---
+title: "MVCC"
+description: "Serve consistent snapshots by retaining multiple committed versions of data."
+category: "Transactions"
+order: 16
+difficulty: "advanced"
+readingTime: 6
+tags: ["mvcc", "isolation", "snapshots", "transactions"]
+related: ["transactions/two-phase-commit", "foundations/time-ordering", "storage/compaction"]
+featured: false
+diagram: "consistency"
+mentalModel: "Readers choose a snapshot; writers create a new version"
+remember: "MVCC removes many read-write conflicts, not every transaction anomaly."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Multi-version concurrency control stores multiple committed versions so readers can observe a stable snapshot while writers create newer versions. Visibility rules and validation determine the isolation level."
+  problem="Locking readers and writers against each other limits concurrency and makes long queries disruptive. Snapshots let them overlap while preserving a coherent view."
+  insightTitle="Snapshot isolation is not serializability"
+  insight="Transactions that read overlapping data and write disjoint rows can both commit and violate a cross-row invariant through write skew."
+  steps={["Assign the transaction a read timestamp or snapshot.", "Return the newest version visible at that snapshot.", "Buffer writes as new versions rather than overwriting in place.", "Validate write conflicts and commit with a later timestamp.", "Garbage-collect versions older than every active snapshot and recovery requirement."]}
+  tradeoffs={[{choice:"Long snapshots",gain:"Stable analytical reads",cost:"Version retention and cleanup pressure"},{choice:"Snapshot isolation",gain:"High concurrency",cost:"Write-skew anomalies"},{choice:"Serializable validation",gain:"Strong invariants",cost:"Retries and coordination"}]}
+  failureTitle="A reader holds a snapshot for hours"
+  failure="Old versions cannot be reclaimed, increasing storage and compaction work. Bound snapshot age, isolate analytics, or export a durable snapshot outside the transactional storage path."
+  systems={["PostgreSQL", "Spanner", "CockroachDB", "FoundationDB"]}
+  question="Give an anomaly allowed by snapshot isolation."
+  answer="Write skew: two transactions read the same invariant, each updates a different row, and both commit because their write sets do not conflict—even though the combined result violates the invariant."
+  leaderQuestions={["Which isolation anomalies can the product tolerate?", "How long may snapshots live?", "What causes transaction retries?", "How is version cleanup monitored?"]}
+/>

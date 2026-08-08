@@ -5,7 +5,7 @@ const { currentPath = "" } = Astro.props;
 const liveCount = curriculum.reduce((total, section) => total + section.items.reduce((count, item) => count + (item.ready && item.href.startsWith("/topics/") ? 1 : 0), 0), 0);
 ---
 <aside class="curriculum-sidebar" aria-label="Curriculum">
-  <div class="sidebar-heading"><span>Curriculum</span><small>{liveCount} of 12 live</small></div>
+  <div class="sidebar-heading"><span>Curriculum</span><small>{liveCount} lessons</small></div>
   {curriculum.map((section) => (
     <section>
       <h2>{section.group}</h2>

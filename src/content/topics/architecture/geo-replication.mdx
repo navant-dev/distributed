@@ -1,0 +1,30 @@
+---
+title: "Geo Replication"
+description: "Copy data across regions while balancing latency, durability, locality, and consistency."
+category: "Architecture"
+order: 31
+difficulty: "advanced"
+readingTime: 7
+tags: ["geo replication", "regions", "latency", "durability"]
+related: ["architecture/active-active", "architecture/rpo-rto", "replication/replication"]
+featured: false
+diagram: "replication"
+mentalModel: "Place replicas by fault domain, then decide when remote durability enters the acknowledgement path"
+remember: "A remote copy improves disaster tolerance only if its lag and recovery path are known."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Geo replication maintains copies across regions to survive large failures, serve local reads, and meet data-location requirements. Synchronous replication spends wide-area latency; asynchronous replication accepts a nonzero data-loss window."
+  problem="Zone-local replicas do not survive a regional disaster, while one remote primary creates poor latency and locality for global users."
+  insightTitle="Durability is an acknowledgement contract"
+  insight="A remote replica that usually catches up is different from a promise that every acknowledged write survives region loss. State exactly which failures an acknowledgement covers."
+  steps={["Choose regions based on latency, regulation, and correlated risk.", "Place replica groups across independent zones and regions.", "Decide whether remote acknowledgement is synchronous, asynchronous, or policy-based.", "Expose replication lag and safe recovery points.", "Practice promotion, client rerouting, backlog catch-up, and failback."]}
+  tradeoffs={[{choice:"Synchronous remote",gain:"Near-zero committed data loss",cost:"Wide-area write latency"},{choice:"Asynchronous remote",gain:"Fast local writes",cost:"Nonzero RPO"},{choice:"Local reads",gain:"Low read latency",cost:"Potential staleness"}]}
+  failureTitle="The primary region disappears with seconds of unshipped writes"
+  failure="Promotion loses those acknowledged local writes unless the contract required remote durability. Preserve the recovery point, communicate the RPO, and reconcile clients that observed outcomes absent from the survivor."
+  systems={["Cross-region database replicas", "Object storage replication", "Global log mirroring", "Disaster-recovery clusters"]}
+  question="How do synchronous and asynchronous geo replication change RPO?"
+  answer="Synchronous remote acknowledgement can make committed RPO approach zero for covered failures; asynchronous replication leaves an RPO roughly bounded by unshipped or unapplied lag, subject to recovery correctness."
+  leaderQuestions={["What does acknowledged mean during region loss?", "How is lag measured in business terms?", "Which data must stay local?", "When was failover last exercised?"]}
+/>

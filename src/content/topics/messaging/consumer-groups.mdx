@@ -1,0 +1,30 @@
+---
+title: "Consumer Groups"
+description: "Scale ordered log processing by assigning partitions across cooperating consumers."
+category: "Messaging"
+order: 24
+difficulty: "intermediate"
+readingTime: 5
+tags: ["consumers", "partitions", "offsets", "rebalancing"]
+related: ["messaging/distributed-logs", "messaging/delivery-semantics", "messaging/backpressure"]
+featured: false
+diagram: "distributed-log"
+mentalModel: "One partition → one active consumer per group → durable offset"
+remember: "Parallelism is bounded by partitions, while ordering is scoped to one partition."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A consumer group divides log partitions among members so each partition has one active consumer in that group. Independent groups maintain independent offsets and can interpret the same log differently."
+  problem="One consumer cannot process an unbounded event stream, but unconstrained parallelism breaks per-key ordering and duplicates work."
+  insightTitle="Assignment is a coordination protocol"
+  insight="Membership changes pause or transfer ownership. Cooperative rebalancing and static membership reduce disruption, but consumers still need safe handoff and idempotent processing."
+  steps={["Join the group with a stable member identity where possible.", "Assign each partition to one active member.", "Read records in partition order.", "Persist processed offsets after the durable outcome.", "On membership change, revoke, checkpoint, and transfer assignments safely."]}
+  tradeoffs={[{choice:"More partitions",gain:"More processing parallelism",cost:"Metadata, open files, and coordination"},{choice:"Frequent commits",gain:"Less replay after failure",cost:"More overhead"},{choice:"Sticky assignment",gain:"Warm caches and fewer moves",cost:"Slower correction of uneven work"}]}
+  failureTitle="A consumer pauses beyond the session timeout"
+  failure="The group reassigns its partitions while the old member may resume. Generation or epoch checks must prevent stale commits, and side effects must tolerate replay from the last durable offset."
+  systems={["Kafka consumer groups", "Pulsar subscriptions", "Kinesis applications", "Google Pub/Sub subscriptions"]}
+  question="Why does adding consumers beyond the partition count not increase throughput?"
+  answer="Within one group each partition has only one active owner, so extra members have no partition to consume. More partitions or intra-message parallelism is required."
+  leaderQuestions={["What partition count supports future throughput?", "How expensive is a rebalance?", "Which key needs ordering?", "How much replay is acceptable?"]}
+/>

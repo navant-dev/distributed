@@ -1,0 +1,31 @@
+---
+import QuickRefresher from "./QuickRefresher.astro";
+import KeyInsight from "./KeyInsight.astro";
+import FailureScenario from "./FailureScenario.astro";
+import TradeoffTable from "./TradeoffTable.astro";
+import InterviewQuestion from "./InterviewQuestion.astro";
+import ManagerLens from "./ManagerLens.astro";
+
+type Tradeoff = { choice: string; gain: string; cost: string };
+const { refresher, problem, insightTitle, insight, steps = [], tradeoffs = [], failureTitle, failure, systems = [], question, answer, leaderQuestions = [] } = Astro.props as {
+  refresher: string; problem: string; insightTitle: string; insight: string; steps: string[]; tradeoffs: Tradeoff[];
+  failureTitle: string; failure: string; systems: string[]; question: string; answer: string; leaderQuestions: string[];
+};
+---
+<QuickRefresher>{refresher}</QuickRefresher>
+
+<section class="lesson-section"><h2>What problem does it solve?</h2><p>{problem}</p></section>
+
+<KeyInsight title={insightTitle}>{insight}</KeyInsight>
+
+<section class="lesson-section"><h2>How it works</h2><ol>{steps.map((step) => <li>{step}</li>)}</ol></section>
+
+<TradeoffTable rows={tradeoffs} />
+
+<FailureScenario title={failureTitle}>{failure}</FailureScenario>
+
+<section class="lesson-section"><h2>Where it appears</h2><ul class="system-list">{systems.map((system) => <li>{system}</li>)}</ul></section>
+
+<InterviewQuestion level="Senior" question={question}>{answer}</InterviewQuestion>
+
+<ManagerLens><ul>{leaderQuestions.map((item) => <li>{item}</li>)}</ul></ManagerLens>

@@ -1,0 +1,30 @@
+---
+title: "Range Partitioning"
+description: "Split ordered keyspace into contiguous ranges for efficient scans and controllable ownership."
+category: "Partitioning"
+order: 11
+difficulty: "intermediate"
+readingTime: 5
+tags: ["sharding", "ranges", "indexes", "routing"]
+related: ["partitioning/consistent-hashing", "partitioning/rebalancing", "partitioning/hot-partitions"]
+featured: false
+diagram: "hash-ring"
+mentalModel: "Sorted keys → range boundaries → one owner per range"
+remember: "Ranges preserve locality, but locality can concentrate load."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Range partitioning assigns contiguous slices of an ordered keyspace to shards. It makes range scans and locality efficient, while requiring the system to split, move, and route around changing boundaries."
+  problem="Hashing spreads load but destroys natural order. Workloads that scan time, geography, tenant IDs, or adjacent keys need placement that preserves locality."
+  insightTitle="The partition key shapes the workload"
+  insight="A good range key groups data that is queried together without sending all new writes to the same edge of the keyspace."
+  steps={["Choose an ordered partition key.", "Maintain a map from boundary ranges to shard owners.", "Route point queries to one range and scans to overlapping ranges.", "Measure size and traffic independently for every range.", "Split large or busy ranges and merge small neighbors."]}
+  tradeoffs={[{choice:"Large ranges",gain:"Small routing map",cost:"Coarse balancing and hot spots"},{choice:"Small ranges",gain:"Fine-grained movement",cost:"More metadata and coordination"},{choice:"Time-leading key",gain:"Efficient recent scans",cost:"Write hotspot at the newest range"}]}
+  failureTitle="All writes target the latest timestamp"
+  failure="One terminal range becomes the sole write owner. Prefix with a controlled bucket, rotate ranges, or separate ingestion order from query order while preserving the scans the product needs."
+  systems={["Bigtable tablets", "CockroachDB ranges", "HBase regions", "MongoDB range sharding"]}
+  question="When is range partitioning preferable to hash partitioning?"
+  answer="When ordered scans and data locality are primary access patterns and the system can actively split and balance skewed ranges."
+  leaderQuestions={["Which queries must stay local?", "Can the leading edge become hot?", "Who owns boundary metadata?", "What is the safe split and merge rate?"]}
+/>

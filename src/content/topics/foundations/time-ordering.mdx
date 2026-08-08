@@ -1,0 +1,30 @@
+---
+title: "Time & Ordering"
+description: "Reason about events when clocks disagree and messages arrive in different orders."
+category: "Foundations"
+order: 5
+difficulty: "intermediate"
+readingTime: 6
+tags: ["clocks", "ordering", "causality", "timestamps"]
+related: ["consistency/consistency-models", "consensus/raft", "transactions/mvcc"]
+featured: false
+diagram: "consistency"
+mentalModel: "Wall clocks estimate when; logical clocks establish before and after"
+remember: "A timestamp is evidence from a clock, not proof of global order."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Distributed nodes do not share a perfectly synchronized clock. Physical time is useful for deadlines and human meaning; logical time tracks causal order without pretending every event has one exact global position."
+  problem="Coordination, conflict resolution, snapshots, and debugging all need to answer whether one event could have influenced another. Clock skew and network delay make wall-clock timestamps alone unsafe for that job."
+  insightTitle="Order only what the invariant requires"
+  insight="Total order is expensive and often unnecessary. Causal or per-key order can preserve the product rule while allowing unrelated work to proceed concurrently."
+  steps={["Use monotonic clocks for elapsed time and deadlines.", "Use NTP-synchronized wall clocks for approximate human time, never as a perfect oracle.", "Use Lamport timestamps to produce an order consistent with causality.", "Use vector clocks when the system must distinguish causally ordered updates from concurrent ones.", "Introduce consensus or a sequencer only where one authoritative total order is required."]}
+  tradeoffs={[{choice:"Physical clock",gain:"Human-readable time and simple expiry",cost:"Skew, jumps, and uncertain ordering"},{choice:"Logical clock",gain:"Causal reasoning without synchronization",cost:"Metadata and no wall-time meaning"},{choice:"Total order",gain:"Simple deterministic application",cost:"Coordination latency and bottlenecks"}]}
+  failureTitle="A clock jumps backward"
+  failure="Lease checks, last-write-wins conflict rules, and elapsed-time calculations can become unsafe. Use monotonic time for durations, attach uncertainty to physical timestamps, and fence authority instead of trusting the newest wall-clock value."
+  systems={["Spanner TrueTime", "Dynamo vector clocks", "Kafka partition offsets", "Hybrid logical clocks"]}
+  question="When would you choose vector clocks over Lamport timestamps?"
+  answer="Choose vector clocks when detecting concurrency matters. Lamport timestamps can order events but cannot tell whether two events were causally independent; vector clocks can, at the cost of larger metadata."
+  leaderQuestions={["Which decisions depend on elapsed time versus event order?", "What clock uncertainty is included in the safety margin?", "Can ordering be scoped per key or partition?", "How will operators reconstruct causality during an incident?"]}
+/>

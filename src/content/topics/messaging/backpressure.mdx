@@ -1,0 +1,30 @@
+---
+title: "Backpressure"
+description: "Slow producers or shed work before queues and consumers become unstable."
+category: "Messaging"
+order: 25
+difficulty: "intermediate"
+readingTime: 5
+tags: ["backpressure", "queues", "flow control", "overload"]
+related: ["reliability/load-shedding", "messaging/consumer-groups", "reliability/circuit-breakers"]
+featured: false
+diagram: "resilience"
+mentalModel: "Demand exceeds drain rate → signal upstream before the buffer becomes the outage"
+remember: "A queue absorbs a burst; it cannot fix sustained overload."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Backpressure communicates that downstream capacity is constrained so upstream components slow, buffer within bounds, or reject work. It turns overload into an explicit control decision."
+  problem="Without feedback, producers continue at full speed while queues grow, latency becomes unbounded, memory fills, and recovery work accumulates faster than consumers can drain it."
+  insightTitle="Queue age is often more useful than queue length"
+  insight="Length lacks context about arrival rate and processing time. Age directly shows how stale the oldest user work has become."
+  steps={["Measure arrival rate, service rate, queue age, and saturation.", "Set finite buffer and concurrency limits.", "Propagate flow-control signals or reduce producer credits.", "Prioritize valuable work and reject or defer lower-priority load.", "Recover gradually so released backlog does not cause another overload wave."]}
+  tradeoffs={[{choice:"Large buffer",gain:"Absorb longer bursts",cost:"High latency and expensive recovery"},{choice:"Producer blocking",gain:"Natural rate matching",cost:"Can spread stalls upstream"},{choice:"Load shedding",gain:"Protect critical work",cost:"Explicit rejected outcomes"}]}
+  failureTitle="Consumers recover and drain the backlog at full speed"
+  failure="The burst can overload databases or external APIs and cause a second failure. Use controlled ramp-up, dependency-aware concurrency, and retry budgets."
+  systems={["Reactive streams", "TCP flow control", "Kafka lag controls", "Queue admission limits"]}
+  question="Why is an unbounded queue not a resilience mechanism?"
+  answer="Under sustained overload it converts rejection into ever-growing latency and resource use. Eventually it exhausts memory or creates a backlog too expensive to recover."
+  leaderQuestions={["What work is safe to reject?", "Which metric triggers backpressure?", "Where is the finite buffer?", "How is recovery ramped safely?"]}
+/>

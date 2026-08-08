@@ -1,0 +1,30 @@
+---
+title: "RPO & RTO"
+description: "Turn disaster recovery into explicit data-loss and restoration objectives."
+category: "Architecture"
+order: 32
+difficulty: "fundamental"
+readingTime: 5
+tags: ["rpo", "rto", "disaster recovery", "resilience"]
+related: ["architecture/geo-replication", "architecture/active-active", "reliability/partial-failures"]
+featured: false
+diagram: "resilience"
+mentalModel: "RPO asks how much state may be lost; RTO asks how long service may be impaired"
+remember: "Backups are an input; a measured restore is the recovery capability."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Recovery Point Objective bounds acceptable data loss measured backward from an incident. Recovery Time Objective targets how quickly an acceptable service level is restored. Both must be defined per capability and failure class."
+  problem="Teams often buy replication and backups without agreeing on the business outcome during disaster. Objectives connect technical recovery mechanisms to tolerable customer impact."
+  insightTitle="One application has several recovery tiers"
+  insight="Authentication, writes, reporting, and historical exports can have different objectives. A single headline RPO or RTO usually hides the real decisions."
+  steps={["Identify business capabilities and protected invariants.", "Define the disasters included in the objective.", "Set RPO from acceptable lost or replayed business events.", "Set RTO for a clearly described degraded or full service state.", "Build, rehearse, time, and audit the recovery path end to end."]}
+  tradeoffs={[{choice:"Lower RPO",gain:"Less data loss",cost:"More synchronous durability and cost"},{choice:"Lower RTO",gain:"Faster restoration",cost:"Warm capacity and automation"},{choice:"Tiered objectives",gain:"Spend according to business value",cost:"More explicit product states"}]}
+  failureTitle="The backup exists but restoration takes two days"
+  failure="The storage objective may be met while the service RTO fails. Recovery includes credentials, infrastructure, metadata, dependencies, validation, traffic routing, and operator decisions—not only data download."
+  systems={["Disaster recovery plans", "Backup policies", "Regional failover", "Business continuity exercises"]}
+  question="Can replication replace backups?"
+  answer="No. Replication improves availability but can copy deletion, corruption, or operator error. Backups provide historical recovery points; both need tested restore procedures."
+  leaderQuestions={["Which failure scenarios are covered?", "What is an acceptable restored state?", "When was recovery timed end to end?", "Who can declare failover and failback?"]}
+/>

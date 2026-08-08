@@ -1,0 +1,30 @@
+---
+title: "Idempotent Workflows"
+description: "Make retries and duplicate delivery converge on one durable business outcome."
+category: "Transactions"
+order: 17
+difficulty: "intermediate"
+readingTime: 5
+tags: ["idempotency", "retries", "workflows", "deduplication"]
+related: ["reliability/failure-retry-patterns", "messaging/delivery-semantics", "transactions/saga"]
+featured: false
+diagram: "resilience"
+mentalModel: "One logical intent → one stable identity → one recorded outcome"
+remember: "Retry the intent, not an anonymous request."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="An idempotent workflow assigns a stable identity to one logical operation and records its durable outcome. Repeated attempts return or continue that same outcome instead of applying the effect again."
+  problem="Timeouts and at-least-once delivery make duplicates unavoidable. Without operation identity, the server cannot distinguish a retry from a new request."
+  insightTitle="Deduplication must share the commit boundary"
+  insight="Recording the key after the side effect leaves a crash window. Persist the operation record and business change atomically, or use an equivalent transactional outbox pattern."
+  steps={["Generate an idempotency key at the edge where user intent begins.", "Atomically claim the key and record request parameters.", "Apply the business state transition once.", "Persist the result and any outgoing message in the same commit boundary.", "Return the recorded result to duplicates and retain it for the full retry horizon."]}
+  tradeoffs={[{choice:"Long retention",gain:"Safe delayed retries",cost:"Storage and index growth"},{choice:"Parameter binding",gain:"Prevents key reuse for different intent",cost:"More validation state"},{choice:"Natural idempotency",gain:"Less deduplication storage",cost:"Not possible for every side effect"}]}
+  failureTitle="The service crashes after charging but before replying"
+  failure="A retry with the same key must recover the recorded charge outcome. If the external provider is involved, pass the same identity downstream or reconcile provider state before attempting another charge."
+  systems={["Payment APIs", "Transactional outbox", "Job schedulers", "Event consumers"]}
+  question="Why is checking for a key and then performing the write in two transactions unsafe?"
+  answer="Concurrent attempts can both observe no key and apply the effect, or a crash can apply the effect before the key is recorded. The claim and effect need one atomic boundary."
+  leaderQuestions={["Where is logical intent created?", "What is the retry horizon?", "Which side effects cross the atomic boundary?", "How are ambiguous outcomes reconciled?"]}
+/>

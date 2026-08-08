@@ -1,0 +1,30 @@
+---
+title: "Hot Partitions"
+description: "Detect and relieve keys or shards that receive disproportionate traffic."
+category: "Partitioning"
+order: 13
+difficulty: "intermediate"
+readingTime: 5
+tags: ["skew", "hot keys", "capacity", "sharding"]
+related: ["partitioning/range-partitioning", "partitioning/rebalancing", "reliability/load-shedding"]
+featured: false
+diagram: "resilience"
+mentalModel: "Average capacity hides the hottest ownership unit"
+remember: "Adding nodes does not split an indivisible hot key."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A hot partition receives enough concentrated traffic to saturate its owner even when the cluster has spare aggregate capacity. The cause may be one key, one tenant, a time-leading range, or skewed routing."
+  problem="Capacity planning based on averages misses concentrated demand. One saturated shard raises tail latency, queues requests, and can trigger retries that spread failure outward."
+  insightTitle="Measure at the smallest movable unit"
+  insight="Shard-level metrics may still hide a single hot key. Diagnose by key, tenant, operation, and time window before choosing a mitigation."
+  steps={["Rank partitions and keys by requests, bytes, CPU, and latency.", "Classify the hotspot as read-heavy, write-heavy, or mixed.", "Cache or replicate read-heavy keys.", "Split, salt, or aggregate write-heavy keys while preserving required ordering.", "Apply tenant isolation, admission control, and load shedding when demand exceeds safe capacity."]}
+  tradeoffs={[{choice:"Key salting",gain:"Parallel write capacity",cost:"Fanout reads and lost per-key order"},{choice:"Hot-key cache",gain:"Absorb repeated reads",cost:"Invalidation and staleness"},{choice:"Dedicated shard",gain:"Fault and capacity isolation",cost:"Poor utilization outside peaks"}]}
+  failureTitle="A celebrity event creates one viral key"
+  failure="Automatic shard movement moves the problem rather than divides it. Replicate or cache the read path, coalesce requests, protect the backing store, and degrade optional detail before queues saturate."
+  systems={["DynamoDB adaptive capacity", "Redis hot-key controls", "CDN request coalescing", "Kafka key salting"]}
+  question="Why might adding ten nodes not improve a hot partition?"
+  answer="If one key or unsplittable range owns the bottleneck, normal routing still sends all of its work to one ownership unit. The access pattern or key representation must change."
+  leaderQuestions={["Which tenant can monopolize a shard?", "Can the hot unit be split without breaking semantics?", "What is the degradation path?", "How quickly can the team identify the responsible key?"]}
+/>

@@ -1,0 +1,30 @@
+---
+title: "Leader Election"
+description: "Select one current coordinator and prevent stale leaders from continuing to act."
+category: "Consensus"
+order: 9
+difficulty: "intermediate"
+readingTime: 6
+tags: ["leadership", "leases", "epochs", "fencing"]
+related: ["consensus/raft", "consensus/quorums", "reliability/partial-failures"]
+featured: false
+diagram: "raft"
+mentalModel: "Elect authority → attach an epoch → fence every side effect"
+remember: "Election chooses a leader; fencing makes old leaders harmless."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Leader election lets a group choose one node to coordinate writes, scheduling, or ownership. A safe design also proves freshness with a term, epoch, or fencing token so an isolated former leader cannot keep acting."
+  problem="Some operations need a single authority to serialize decisions or avoid duplicate work. Static ownership fails when the owner crashes, while informal failover risks two active leaders."
+  insightTitle="Failure detection is suspicion, not proof"
+  insight="A timeout can justify electing a replacement but cannot prove the old leader stopped. Downstream resources must reject commands carrying an older epoch."
+  steps={["Followers monitor heartbeats or a lease deadline.", "A candidate advances the term and asks a quorum for votes.", "Voters grant at most one vote per term under the protocol rules.", "The winner publishes its term with every command.", "Resources accept only commands with a term at least as new as the last one observed."]}
+  tradeoffs={[{choice:"Short timeout",gain:"Fast failover",cost:"False elections during delay"},{choice:"Long timeout",gain:"Stable leadership",cost:"Longer recovery"},{choice:"Lease leader",gain:"Fast local decisions",cost:"Clock and pause assumptions"}]}
+  failureTitle="The old leader is paused, not dead"
+  failure="After a long process pause it resumes with stale authority. Without fencing it can overwrite the new leader's work. A monotonically increasing token lets storage reject that command."
+  systems={["Raft", "ZooKeeper recipes", "etcd elections", "Kubernetes controllers"]}
+  question="Why is a distributed lock without a fencing token unsafe?"
+  answer="The holder may pause past expiry and later resume. Another client can acquire the lock meanwhile, so both can act unless the protected resource rejects the stale holder's lower token."
+  leaderQuestions={["What exactly requires one leader?", "Which quorum elects it?", "How is stale authority fenced?", "What recovery time follows the chosen timeout?"]}
+/>

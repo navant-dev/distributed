@@ -1,0 +1,30 @@
+---
+title: "Active / Active Architecture"
+description: "Serve traffic from multiple regions while making write ownership and conflicts explicit."
+category: "Architecture"
+order: 30
+difficulty: "advanced"
+readingTime: 7
+tags: ["multi-region", "active-active", "availability", "routing"]
+related: ["architecture/geo-replication", "architecture/conflict-resolution", "consistency/pacelc"]
+featured: false
+diagram: "replication"
+mentalModel: "Multiple serving regions + explicit authority per operation + tested partition behavior"
+remember: "Active / active traffic is easy; active / active mutable authority is the hard part."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Active / active architecture serves production traffic from multiple regions simultaneously. Reads are straightforward; writes require a clear strategy for ownership, global coordination, or deterministic conflict resolution."
+  problem="A single active region adds latency for distant users and creates a regional recovery event. Multiple active regions can improve locality and availability if data semantics support them."
+  insightTitle="Choose authority per invariant"
+  insight="One system can use local ownership for shopping carts, a home region for accounts, and global consensus for scarce inventory. Active / active is not one universal write policy."
+  steps={["Define the regional failure and latency objectives.", "Route users to a healthy nearby region.", "Assign write authority by key, tenant, operation, or consensus group.", "Replicate durable changes and track lag.", "Define partition behavior, conflict handling, failover, and failback before launch."]}
+  tradeoffs={[{choice:"Single-writer key",gain:"Simple conflicts and invariants",cost:"Remote writes during owner loss"},{choice:"Multi-writer",gain:"Local write availability",cost:"Conflict semantics"},{choice:"Global consensus",gain:"Strong global order",cost:"Inter-region latency"}]}
+  failureTitle="Regions can serve users but cannot reach each other"
+  failure="The design must choose per operation whether both sides continue, one side rejects writes, or authority is reassigned. Automatic dual promotion without fencing creates split brain."
+  systems={["Global SaaS", "Multi-region commerce", "Edge APIs", "Global databases"]}
+  question="What questions must be answered before calling a design active / active?"
+  answer="Which regions accept which writes, how authority is established and fenced, what happens during partitions, how conflicts resolve, and how failback avoids replay or data loss."
+  leaderQuestions={["Which operations truly need local writes?", "What is the partition-time customer contract?", "How is failover rehearsed?", "Who owns reconciliation after recovery?"]}
+/>
