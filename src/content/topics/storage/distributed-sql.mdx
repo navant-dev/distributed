@@ -1,0 +1,30 @@
+---
+title: "Distributed SQL"
+description: "Preserve relational queries and transactions while distributing storage and execution."
+category: "Storage"
+order: 21
+difficulty: "advanced"
+readingTime: 7
+tags: ["sql", "transactions", "query planning", "consensus"]
+related: ["storage/distributed-databases", "transactions/mvcc", "transactions/two-phase-commit"]
+featured: false
+diagram: "two-phase"
+mentalModel: "SQL plan over ranges + replicated state + distributed transaction protocol"
+remember: "SQL compatibility does not make cross-region coordination local."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Distributed SQL systems retain relational schemas, query planning, and transactions while partitioning and replicating data across nodes. They coordinate metadata, timestamps, locks or intents, and query fragments."
+  problem="Teams want horizontal scale and resilience without abandoning joins, constraints, and transactional invariants."
+  insightTitle="Data placement is part of query planning"
+  insight="A logically simple join can become a large network shuffle. Schema and locality choices determine whether common transactions remain single-range or cross the cluster."
+  steps={["Translate SQL into a logical and physical plan.", "Route scans and writes to the ranges that own the data.", "Push computation near storage and exchange only necessary rows.", "Coordinate multi-range writes with timestamps and an atomic commit protocol.", "Replicate each range and recover its authority independently."]}
+  tradeoffs={[{choice:"Global transactions",gain:"Simple cross-row invariants",cost:"Coordination and tail latency"},{choice:"Locality-aware schema",gain:"Fast common operations",cost:"More deliberate data modeling"},{choice:"Distributed joins",gain:"Flexible analytics",cost:"Network shuffle and memory pressure"}]}
+  failureTitle="One participant is slow during commit"
+  failure="The transaction's latency follows the slowest required participant and may leave an ambiguous client result. Deadlines, durable transaction records, recovery, and idempotent retries are necessary."
+  systems={["Google Spanner", "CockroachDB", "TiDB", "YugabyteDB"]}
+  question="Why can a normalized schema perform poorly in distributed SQL?"
+  answer="Frequently joined or transactionally updated rows may land on different ranges, turning local operations into distributed scans, shuffles, and commits. Locality-aware keys or selective denormalization can keep the common path local."
+  leaderQuestions={["Which transactions cross ranges?", "Where must data reside?", "What is the latency budget for global commit?", "How are schema changes coordinated safely?"]}
+/>

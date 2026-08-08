@@ -1,0 +1,30 @@
+---
+title: "Load Shedding"
+description: "Reject lower-value work early so critical operations remain healthy during overload."
+category: "Reliability"
+order: 29
+difficulty: "intermediate"
+readingTime: 5
+tags: ["overload", "admission control", "priorities", "degradation"]
+related: ["messaging/backpressure", "reliability/circuit-breakers", "partitioning/hot-partitions"]
+featured: false
+diagram: "resilience"
+mentalModel: "Finite safe capacity → admit valuable work → reject before saturation"
+remember: "A clear rejection is better than accepting work that will time out after consuming resources."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Load shedding rejects, defers, samples, or degrades work when demand exceeds safe capacity. Admission decisions happen before expensive resources are consumed."
+  problem="Once a service is saturated, latency rises, callers time out and retry, queues grow, and useful throughput can collapse."
+  insightTitle="Protect a stable operating point"
+  insight="The goal is not to maximize accepted requests; it is to keep the system below the point where additional work reduces completed useful work."
+  steps={["Identify the saturation signal and safe concurrency envelope.", "Classify requests by priority, cost, deadline, and tenant.", "Reject early with a retryable or degraded response.", "Reserve capacity for critical operations and recovery probes.", "Ramp admission back gradually after pressure falls."]}
+  tradeoffs={[{choice:"Early rejection",gain:"Preserve latency and throughput",cost:"Visible errors"},{choice:"Priority queues",gain:"Protect critical journeys",cost:"Starvation risk"},{choice:"Graceful degradation",gain:"Retain partial value",cost:"More product states to operate"}]}
+  failureTitle="Every caller retries rejected work immediately"
+  failure="Shedding becomes a synchronized retry storm. Return backoff guidance, apply jitter and retry budgets, and make overload responses explicit enough that clients do not treat them as ordinary transient errors."
+  systems={["API admission control", "Database connection pools", "Search result degradation", "Brownout patterns"]}
+  question="Where should load shedding happen?"
+  answer="As early as possible where request cost, priority, and system saturation are known—before queues, database connections, or downstream calls are consumed."
+  leaderQuestions={["Which user journeys are protected?", "Who defines priority?", "What is the stable capacity limit?", "How is fairness enforced across tenants?"]}
+/>

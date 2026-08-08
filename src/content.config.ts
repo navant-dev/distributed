@@ -7,7 +7,7 @@ const topics = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.enum(["Foundations", "Consistency", "Replication", "Consensus", "Partitioning", "Transactions", "Storage", "Messaging", "Reliability"]),
+    category: z.enum(["Foundations", "Consistency", "Replication", "Consensus", "Partitioning", "Transactions", "Storage", "Messaging", "Reliability", "Architecture"]),
     order: z.number().int().positive(),
     difficulty: z.enum(["fundamental", "intermediate", "advanced"]),
     readingTime: z.number().int().positive(),

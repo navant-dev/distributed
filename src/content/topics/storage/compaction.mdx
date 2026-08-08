@@ -1,0 +1,30 @@
+---
+title: "Compaction"
+description: "Rewrite immutable storage files to reclaim space and control read amplification."
+category: "Storage"
+order: 20
+difficulty: "intermediate"
+readingTime: 5
+tags: ["compaction", "sstables", "storage", "amplification"]
+related: ["storage/lsm-trees", "transactions/mvcc", "reliability/load-shedding"]
+featured: false
+diagram: "lsm"
+mentalModel: "Merge sorted runs → discard obsolete versions → write fewer cleaner runs"
+remember: "Compaction pays deferred write cost in the background."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Compaction merges immutable sorted files, removes overwritten values when safe, and reclaims tombstoned data. It controls read and space amplification by spending background I/O and write amplification."
+  problem="An append-friendly store accumulates overlapping files and obsolete versions. Without rewriting, reads touch too many files and disk space grows indefinitely."
+  insightTitle="There is no free compaction strategy"
+  insight="Leveled compaction favors reads and space efficiency; size-tiered compaction favors write throughput. The right choice follows the workload and storage budget."
+  steps={["Select files with overlap or size pressure.", "Merge entries in key order.", "Keep the newest version required by snapshots and replica repair.", "Apply tombstone safety rules before dropping deletes.", "Publish the new files atomically, then remove replaced files."]}
+  tradeoffs={[{choice:"Leveled",gain:"Predictable reads and space",cost:"Higher write amplification"},{choice:"Size-tiered",gain:"Efficient sequential writes",cost:"More read and space amplification"},{choice:"Aggressive cleanup",gain:"Reclaim disk quickly",cost:"Foreground I/O interference"}]}
+  failureTitle="Tombstones are removed before a replica repairs"
+  failure="An older value can reappear when the stale replica rejoins. Keep deletions for a repair-safe interval, track replica progress, or use stronger version and anti-entropy rules."
+  systems={["RocksDB", "Cassandra", "LevelDB", "Bigtable"]}
+  question="What is write amplification, and why does compaction cause it?"
+  answer="It is the ratio of physical bytes written to logical bytes updated. Compaction rewrites still-live data repeatedly as files merge across levels, increasing that ratio."
+  leaderQuestions={["Which amplification dimension is limiting?", "What foreground latency pauses compaction?", "How is tombstone safety defined?", "How much temporary disk headroom is reserved?"]}
+/>

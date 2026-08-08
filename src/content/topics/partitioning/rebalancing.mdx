@@ -1,0 +1,30 @@
+---
+title: "Rebalancing"
+description: "Move ownership safely as data, traffic, and cluster membership change."
+category: "Partitioning"
+order: 12
+difficulty: "advanced"
+readingTime: 6
+tags: ["rebalancing", "migration", "ownership", "capacity"]
+related: ["partitioning/range-partitioning", "partitioning/consistent-hashing", "partitioning/hot-partitions"]
+featured: false
+diagram: "replication"
+mentalModel: "Copy → catch up → switch authority → remove old copy"
+remember: "Rebalancing is a live data migration, not a routing-table edit."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Rebalancing transfers partitions when nodes join, leave, fill up, or become unevenly loaded. A safe move preserves reads and writes while ownership changes under live traffic."
+  problem="Static placement decays as datasets grow and workloads shift. Simply changing the owner can lose recent writes, produce two authorities, or overwhelm the network."
+  insightTitle="Control movement as background work"
+  insight="Rebalancing competes with customer traffic. Rate, schedule, observe, and pause it like any other production workload."
+  steps={["Choose a target using capacity, fault-domain, and load constraints.", "Snapshot and copy the partition to the target.", "Stream changes that occurred during the copy.", "Fence the old owner and atomically publish new routing metadata.", "Verify the target, retain a rollback window, then delete the old replica."]}
+  tradeoffs={[{choice:"Fast movement",gain:"Correct skew quickly",cost:"Network and disk interference"},{choice:"Slow movement",gain:"Protect foreground latency",cost:"Long exposure to imbalance"},{choice:"Automatic balancing",gain:"Continuous correction",cost:"Risk of oscillation without damping"}]}
+  failureTitle="The source fails halfway through a move"
+  failure="The control plane must know which copy is authoritative and whether the target has a complete checkpoint. Resume from durable progress or restart from another replica; never infer authority from who has more bytes."
+  systems={["Cassandra streaming", "Kafka partition reassignment", "CockroachDB replica queues", "Elasticsearch shard relocation"]}
+  question="How do you prevent a rebalancer from causing an outage?"
+  answer="Use bounded concurrency and bandwidth, health-aware admission, stable placement constraints, progress checkpoints, rollback, and automatic pause conditions tied to foreground latency and saturation."
+  leaderQuestions={["What is the movement budget?", "Which fault domains must remain represented?", "How is ownership switched atomically?", "What signal pauses the controller?"]}
+/>

@@ -1,0 +1,30 @@
+---
+title: "Distributed Databases"
+description: "Combine partitioning, replication, transactions, and routing into one data service."
+category: "Storage"
+order: 19
+difficulty: "intermediate"
+readingTime: 7
+tags: ["databases", "replication", "sharding", "metadata"]
+related: ["storage/distributed-sql", "replication/replication", "partitioning/rebalancing"]
+featured: false
+diagram: "fundamentals"
+mentalModel: "Route a key → find authority → replicate state → recover ownership"
+remember: "A distributed database is a bundle of explicit trade-offs, not one capability."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A distributed database spreads data and work across nodes while presenting one data service. Its behavior emerges from partitioning, replication, consistency, transaction, storage-engine, and metadata choices."
+  problem="One database node has finite capacity and one failure domain. Distribution adds scale and resilience while making routing, ownership, and cross-partition operations part of the database."
+  insightTitle="Metadata is the map of authority"
+  insight="Clients need a trustworthy path from a key to the current owner. Stale metadata must redirect safely and cannot create two writable authorities."
+  steps={["Partition the logical keyspace into ownership units.", "Place replicas across independent fault domains.", "Use consensus, leases, or quorums to establish write authority.", "Route reads according to the advertised consistency contract.", "Move ownership, repair replicas, and evolve metadata under live traffic."]}
+  tradeoffs={[{choice:"Shared nothing",gain:"Independent scale and fault isolation",cost:"Data movement and distributed transactions"},{choice:"Shared storage",gain:"Fast compute replacement",cost:"Storage dependency and network cost"},{choice:"Client routing",gain:"One less proxy hop",cost:"Complex metadata refresh"}]}
+  failureTitle="Routing metadata is stale"
+  failure="The old owner must reject or redirect the request using an ownership epoch. Blindly accepting a write risks split authority; blindly failing every stale client creates avoidable unavailability."
+  systems={["DynamoDB", "Cassandra", "Spanner", "CockroachDB"]}
+  question="What are the main control-plane responsibilities in a distributed database?"
+  answer="Membership, placement, ownership metadata, rebalancing, schema state, failure recovery, and the safe transition of authority between replicas or shards."
+  leaderQuestions={["Which guarantees are contractual?", "What is the metadata failure mode?", "How are noisy tenants isolated?", "What is the repair and rebalancing budget?"]}
+/>

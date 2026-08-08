@@ -1,0 +1,30 @@
+---
+title: "Circuit Breakers"
+description: "Stop repeated calls to an unhealthy dependency and probe recovery deliberately."
+category: "Reliability"
+order: 28
+difficulty: "intermediate"
+readingTime: 5
+tags: ["circuit breaker", "overload", "recovery", "dependencies"]
+related: ["reliability/failure-retry-patterns", "reliability/load-shedding", "messaging/backpressure"]
+featured: false
+diagram: "resilience"
+mentalModel: "Closed → failure threshold → open → limited probes → closed"
+remember: "A breaker protects resources; it does not repair the dependency."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A circuit breaker observes dependency outcomes and temporarily rejects calls when failure indicates continued attempts are harmful. After a pause it admits limited probes before restoring traffic."
+  problem="Repeated slow or failing calls consume threads, connections, and retry capacity, spreading one dependency failure into caller saturation."
+  insightTitle="Scope the breaker to the failure domain"
+  insight="One global breaker can take healthy tenants or endpoints offline. Partition state by destination, operation, or shard when failures are independent."
+  steps={["Record meaningful failures and slow outcomes over a bounded window.", "Open when volume and failure thresholds indicate harm.", "Return a fast fallback or explicit unavailable result.", "After a cooldown, allow a small number of half-open probes.", "Close gradually on recovery or reopen immediately when probes fail."]}
+  tradeoffs={[{choice:"Sensitive threshold",gain:"Fast protection",cost:"False trips"},{choice:"Long cooldown",gain:"Recovery breathing room",cost:"Delayed restoration"},{choice:"Fallback",gain:"Preserve user journey",cost:"Staleness or reduced functionality"}]}
+  failureTitle="Every application instance probes at once"
+  failure="Synchronized half-open probes can overload a recovering dependency. Add jitter, cap probe concurrency, and coordinate at an appropriate scope."
+  systems={["Resilience4j", "Envoy outlier detection", "Service clients", "API gateways"]}
+  question="How is a circuit breaker different from a retry policy?"
+  answer="Retries attempt recovery for an individual operation; a breaker uses recent system evidence to stop new attempts temporarily and protect shared resources. They must share one budget."
+  leaderQuestions={["Which outcomes count as breaker failures?", "What is the fallback contract?", "At what scope is state isolated?", "How are probes prevented from stampeding?"]}
+/>

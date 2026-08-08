@@ -1,0 +1,30 @@
+---
+title: "Partial Failures"
+description: "Design for components and network paths failing independently while the rest of the system continues."
+category: "Reliability"
+order: 27
+difficulty: "fundamental"
+readingTime: 5
+tags: ["failures", "timeouts", "ambiguity", "fault isolation"]
+related: ["foundations/distributed-systems", "reliability/failure-retry-patterns", "consensus/leader-election"]
+featured: false
+diagram: "fundamentals"
+mentalModel: "Healthy caller + uncertain network + independently failing dependency"
+remember: "A timeout tells you the deadline expired, not what happened remotely."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A partial failure leaves some nodes or communication paths working while others are slow, unreachable, or returning errors. The surviving system must decide how to respond without complete knowledge."
+  problem="Unlike a local process crash, remote failure is ambiguous. The request, the response, or only one network direction may be lost, and different observers can reach different conclusions."
+  insightTitle="Uncertainty is a normal state"
+  insight="Robust protocols make uncertainty explicit with deadlines, operation IDs, durable state, and reconciliation instead of trying to eliminate it."
+  steps={["Define a deadline for every remote operation.", "Classify failures as definite, ambiguous, or policy rejection.", "Carry stable identity across retries.", "Isolate the dependency with concurrency and resource limits.", "Reconcile uncertain outcomes from authoritative durable state."]}
+  tradeoffs={[{choice:"Short deadline",gain:"Protect caller resources",cost:"More false timeouts"},{choice:"Fail open",gain:"Continue service",cost:"Possible invariant violation"},{choice:"Fail closed",gain:"Preserve safety",cost:"Reduced availability"}]}
+  failureTitle="Only responses are dropped"
+  failure="The server successfully applies requests while callers time out and retry. Without idempotency this duplicates effects and makes the healthy server appear broken."
+  systems={["Remote APIs", "Database clients", "Service meshes", "Multi-zone clusters"]}
+  question="How do you distinguish a slow dependency from a failed one?"
+  answer="You cannot know perfectly within a finite deadline. Treat the timeout as a policy decision, use health evidence and repeated observations, and design the operation to remain safe if the dependency was merely slow."
+  leaderQuestions={["Which failures produce ambiguous outcomes?", "What is the authoritative recovery record?", "How is blast radius isolated?", "Which promises degrade during uncertainty?"]}
+/>

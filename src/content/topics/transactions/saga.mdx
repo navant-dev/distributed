@@ -1,0 +1,30 @@
+---
+title: "Saga Transactions"
+description: "Coordinate a long-running workflow with local commits and explicit compensation."
+category: "Transactions"
+order: 15
+difficulty: "intermediate"
+readingTime: 6
+tags: ["saga", "workflows", "compensation", "transactions"]
+related: ["transactions/two-phase-commit", "transactions/idempotent-workflows", "messaging/delivery-semantics"]
+featured: false
+diagram: "two-phase"
+mentalModel: "Commit locally → continue → compensate completed steps on failure"
+remember: "A saga restores a business invariant; it does not rewind history."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A saga breaks one cross-service transaction into local transactions. Each committed step has a compensating action, and a durable orchestrator or event choreography drives the workflow toward completion or repair."
+  problem="Long-lived work across independent services cannot safely hold database locks or depend on every participant being available at once."
+  insightTitle="Compensation is a product decision"
+  insight="Refunding a payment is a new visible event, not an erasure. The business must define what acceptable recovery means after each irreversible step."
+  steps={["Define the invariant and durable workflow state.", "Execute one idempotent local transaction.", "Record the outcome and next command atomically.", "Retry ambiguous steps with stable operation IDs.", "On terminal failure, run compensations in a deliberate order and escalate irreparable cases."]}
+  tradeoffs={[{choice:"Orchestration",gain:"Visible state and centralized recovery",cost:"Coordinator complexity"},{choice:"Choreography",gain:"Loose service coupling",cost:"Harder global reasoning"},{choice:"Compensation",gain:"Progress without global locks",cost:"Temporary inconsistency and business edge cases"}]}
+  failureTitle="A compensation also fails"
+  failure="The workflow remains in a durable recovery state and retries safely. After a policy limit, route it to human or automated reconciliation with complete history; never silently declare success."
+  systems={["Order fulfillment", "Travel booking", "Payment workflows", "Temporal-style orchestration"]}
+  question="When would you choose a saga instead of two-phase commit?"
+  answer="Choose a saga for long-running, cross-service work where temporary inconsistency and explicit compensation are acceptable and participant availability matters more than one atomic commit point."
+  leaderQuestions={["Which steps are irreversible?", "Who owns compensation semantics?", "How are stuck workflows discovered?", "What customer state is visible during recovery?"]}
+/>

@@ -1,0 +1,30 @@
+---
+title: "Delivery Semantics"
+description: "Understand what at-most-once, at-least-once, and effectively-once processing really promise."
+category: "Messaging"
+order: 23
+difficulty: "intermediate"
+readingTime: 6
+tags: ["delivery", "duplicates", "idempotency", "messaging"]
+related: ["messaging/distributed-logs", "transactions/idempotent-workflows", "reliability/failure-retry-patterns"]
+featured: false
+diagram: "distributed-log"
+mentalModel: "Delivery promise + processing boundary + side-effect semantics"
+remember: "Exactly-once transport cannot make an arbitrary external side effect exactly once."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Delivery semantics describe how message transfer and acknowledgement behave under failure. End-to-end outcomes also depend on consumer state, offset commits, retries, and every side effect beyond the broker."
+  problem="A consumer can crash before or after processing but before acknowledging. The broker must choose between possible loss and possible duplicate delivery."
+  insightTitle="Move the atomic boundary into durable state"
+  insight="Effectively-once processing comes from an idempotent operation or an atomic commit that includes the business change and consumed-message identity."
+  steps={["Assign a stable identity to each logical event.", "Fetch from a durable position or subscription.", "Apply the state transition idempotently or transactionally.", "Commit progress only after the durable outcome.", "Send external effects through their own deduplicated or outbox-driven path."]}
+  tradeoffs={[{choice:"At-most-once",gain:"No broker redelivery",cost:"Possible loss"},{choice:"At-least-once",gain:"Retry until acknowledged",cost:"Duplicate processing"},{choice:"Transactional processing",gain:"Atomic state and progress",cost:"Scoped systems and coordination"}]}
+  failureTitle="The consumer writes state, then crashes before committing its offset"
+  failure="The message is delivered again. A stable event ID and atomic outcome record let the consumer recognize the duplicate and return success without applying the change twice."
+  systems={["Kafka transactions", "SQS visibility timeout", "Pub/Sub acknowledgements", "Transactional outbox"]}
+  question="What does exactly-once mean in a real event pipeline?"
+  answer="Only within a clearly defined atomic boundary. The broker may atomically connect input offsets and output records, but databases, emails, payments, and other external effects still need idempotency or reconciliation."
+  leaderQuestions={["Where does the delivery guarantee end?", "Which effects are idempotent?", "How are poison messages isolated?", "What replay window must be supported?"]}
+/>

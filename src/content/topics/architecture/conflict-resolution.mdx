@@ -1,0 +1,30 @@
+---
+title: "Conflict Resolution"
+description: "Merge concurrent updates using semantics that preserve the product's invariants."
+category: "Architecture"
+order: 33
+difficulty: "advanced"
+readingTime: 7
+tags: ["conflicts", "concurrency", "crdt", "multi-region"]
+related: ["architecture/active-active", "foundations/time-ordering", "consistency/consistency-models"]
+featured: false
+diagram: "consistency"
+mentalModel: "Detect concurrency → preserve intent → merge or escalate by business rule"
+remember: "Conflict resolution is correct only relative to a product invariant."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Concurrent writes occur when replicas accept updates without one shared order. Resolution may reject one write, select a winner, merge fields, use a convergent data type, or ask a human—depending on the invariant."
+  problem="Multi-writer and offline systems can create valid updates from the same earlier version. Replicas need deterministic convergence without silently destroying important intent."
+  insightTitle="Last-write-wins is a loss policy"
+  insight="Wall-clock ordering is simple but can discard a causally meaningful update because of skew. Use it only when that loss is explicitly acceptable."
+  steps={["Attach version metadata that can identify stale and concurrent writes.", "Classify the data by invariant and mergeability.", "Choose rejection, deterministic winner, semantic merge, CRDT, or manual resolution.", "Apply the rule identically at every replica.", "Retain conflict evidence and measure how often resolution loses or escalates intent."]}
+  tradeoffs={[{choice:"Last-write-wins",gain:"Simple bounded state",cost:"Silent intent loss and clock assumptions"},{choice:"Sibling versions",gain:"Preserve concurrent intent",cost:"Read-time complexity"},{choice:"CRDT",gain:"Automatic convergence",cost:"Restricted data semantics and metadata"}]}
+  failureTitle="Two regions decrement the last inventory item"
+  failure="A generic merge can oversell because the invariant is non-commutative. Route the scarce resource through one authority, escrow bounded rights per region, or reject and reconcile explicitly."
+  systems={["Dynamo sibling versions", "Cassandra timestamps", "Collaborative editors", "CRDT-based stores"]}
+  question="When is a CRDT a good fit for conflict resolution?"
+  answer="When the data type's operations can be modeled with associative, commutative, and idempotent merge semantics that preserve the actual product invariant, such as sets or counters with well-defined behavior."
+  leaderQuestions={["Which intent may be discarded?", "Can the invariant be represented as a convergent data type?", "What is the conflict rate?", "Who owns manual reconciliation?"]}
+/>
