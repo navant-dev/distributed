@@ -18,6 +18,7 @@ import FailureScenario from "@/components/content/FailureScenario.astro";
 import TradeoffTable from "@/components/content/TradeoffTable.astro";
 import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
 import ManagerLens from "@/components/content/ManagerLens.astro";
+import ConsistencyExplorer from "@/components/interactive/ConsistencyExplorer.astro";
 
 <QuickRefresher>A consistency model constrains what values a read may return and how operations appear ordered. Stronger models simplify application reasoning; weaker models reduce coordination and often improve latency and availability.</QuickRefresher>
 
@@ -30,6 +31,10 @@ import ManagerLens from "@/components/content/ManagerLens.astro";
 - **Eventual:** replicas converge after writes stop, without promising when.
 
 <KeyInsight title="Stronger is not automatically better">The right model is the weakest promise that still preserves business invariants and a coherent user experience. Extra strength can spend latency and availability without delivering product value.</KeyInsight>
+
+## Explore replica visibility
+
+<ConsistencyExplorer />
 
 <TradeoffTable rows={[
   {choice:"Linearizable",gain:"Simple invariants and one current value",cost:"Coordination on the critical path"},

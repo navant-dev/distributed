@@ -18,6 +18,7 @@ import FailureScenario from "@/components/content/FailureScenario.astro";
 import TradeoffTable from "@/components/content/TradeoffTable.astro";
 import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
 import ManagerLens from "@/components/content/ManagerLens.astro";
+import ConsistentHashingPlayground from "@/components/interactive/ConsistentHashingPlayground.astro";
 
 <QuickRefresher>
 Consistent hashing maps both nodes and keys into the same hash space. A key belongs to the next node clockwise. Adding or removing a node changes ownership for only a neighboring slice instead of remapping nearly every key.
@@ -38,6 +39,10 @@ A useful production design also needs virtual nodes, replication, failure detect
 3. Walk clockwise from the key to its first node position.
 4. Replicate to the next distinct physical nodes for resilience.
 5. When membership changes, transfer only affected ranges.
+
+## Move nodes and keys
+
+<ConsistentHashingPlayground />
 
 <TradeoffTable rows={[
   { choice: "More virtual nodes", gain: "Smoother distribution and capacity weighting", cost: "More metadata and range movement" },
