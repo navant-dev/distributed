@@ -1,0 +1,51 @@
+---
+title: "PACELC"
+description: "Reason about consistency and latency both during partitions and during ordinary healthy operation."
+category: "Consistency"
+order: 3
+difficulty: "intermediate"
+readingTime: 5
+tags: ["pacelc", "consistency", "latency", "partitions"]
+related: ["consistency/cap-theorem", "consistency/consistency-models", "replication/replication"]
+featured: false
+diagram: "pacelc"
+mentalModel: "If Partition: Availability or Consistency; Else: Latency or Consistency"
+remember: "CAP describes the partition case. PACELC adds the latency-versus-consistency choice a system makes during normal operation."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>PACELC says: **if there is a Partition, choose Availability or Consistency; Else, choose lower Latency or stronger Consistency.** It corrects a common blind spot in CAP discussions: coordination costs exist even when every link is healthy.</QuickRefresher>
+
+## What problem does PACELC solve?
+
+CAP explains the forced decision during a network partition. Most requests happen without a partition, yet a globally consistent write may still wait for another region. PACELC makes that everyday performance decision explicit.
+
+<KeyInsight title="Distance is part of the consistency contract">A cross-region round trip cannot be optimized away. If a write must be acknowledged on another continent before success, geography becomes user-visible latency.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"PC / EC",gain:"Single order during failures and normal operation",cost:"Coordination latency and rejected partitioned work"},
+  {choice:"PA / EL",gain:"Fast local responses and continued operation",cost:"Staleness and conflict resolution"},
+  {choice:"Mixed by operation",gain:"Critical invariants stay strong; feeds stay fast",cost:"More contracts to document and test"}
+]} />
+
+<FailureScenario title="Healthy regions are 120 ms apart">There is no partition, but a synchronous quorum adds at least one wide-area round trip. A local-first design can respond faster only by allowing another region to lag.</FailureScenario>
+
+<FailureScenario title="The inter-region link fails">A consistency-first operation rejects or delays writes without its quorum. An availability-first operation accepts local writes and needs deterministic conflict handling after recovery.</FailureScenario>
+
+## Where this appears
+
+Globally distributed databases expose PACELC through replica placement, commit policy, bounded staleness, and per-request consistency. Product teams express it through which actions may be stale and which invariants require cross-region authority.
+
+<InterviewQuestion level="Senior" question="How does PACELC improve on CAP?">It retains CAP’s partition decision and adds the normal-case trade-off: without a partition, stronger consistency still requires coordination and therefore competes with latency.</InterviewQuestion>
+
+<ManagerLens>
+- Which user actions justify cross-region coordination?
+- What latency budget is allocated to consistency?
+- Is staleness measured and communicated?
+- Who owns conflict resolution after an available partition?
+</ManagerLens>

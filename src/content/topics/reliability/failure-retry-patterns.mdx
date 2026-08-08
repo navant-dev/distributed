@@ -1,0 +1,47 @@
+---
+title: "Failure & Retry Patterns"
+description: "Recover from transient failure without turning retries into a synchronized overload event."
+category: "Reliability"
+order: 12
+difficulty: "intermediate"
+readingTime: 7
+tags: ["retries", "timeouts", "backoff", "circuit-breaker"]
+related: ["foundations/distributed-systems", "messaging/distributed-logs", "transactions/two-phase-commit"]
+featured: false
+diagram: "resilience"
+mentalModel: "Bound waiting → retry less often → randomize → cap work → shed load"
+remember: "Retries are additional traffic sent to a system that may already be overloaded; budget and coordinate them like any other load."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>Reliable remote calls need bounded timeouts, exponential backoff, jitter, idempotency, retry budgets, and overload protection. Retries help transient faults only when the downstream system has capacity to recover.</QuickRefresher>
+
+## How the control loop works
+
+Timeouts bound resource occupancy. Backoff spaces repeated attempts. Jitter prevents clients from synchronizing. Retry budgets cap amplification. Circuit breakers stop known-bad calls, while bulkheads and load shedding preserve critical capacity.
+
+<KeyInsight title="A timeout is not a cancellation">The downstream operation may continue after the caller gives up. Every retried write must have an idempotency strategy, and expensive abandoned work should receive a cancellation signal where supported.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"Aggressive retry",gain:"Fast recovery from rare packet loss",cost:"Load amplification and duplicate work"},
+  {choice:"Circuit breaker",gain:"Stops repeated calls to a failing dependency",cost:"Can delay recovery if thresholds are poor"},
+  {choice:"Load shedding",gain:"Preserves useful work under saturation",cost:"Explicitly rejects lower-priority requests"}
+]} />
+
+<FailureScenario title="Ten thousand clients retry after the same timeout">Without jitter they return together, creating a retry storm that prevents the dependency from recovering. Randomized backoff spreads demand across time.</FailureScenario>
+
+<FailureScenario title="Three service layers each retry three times">One user request can create up to 27 downstream attempts. Retry at one well-chosen layer and propagate a shared deadline so deeper services cannot outlive the request budget.</FailureScenario>
+
+<InterviewQuestion level="Senior" question="Why should retries have a budget?">Retries consume the same constrained capacity as original traffic. A budget limits amplification, protects recovery, and forces the system to fail deliberately rather than extend an outage.</InterviewQuestion>
+
+<ManagerLens>
+- Define the retry owner and maximum amplification per request.
+- Measure rejected and shed work as product signals.
+- Test correlated dependency slowdown, not only hard failure.
+- Prioritize critical traffic before an incident begins.
+</ManagerLens>

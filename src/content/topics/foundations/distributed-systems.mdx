@@ -1,0 +1,56 @@
+---
+title: "Distributed Systems Fundamentals"
+description: "Understand why teams distribute computation, what they gain, and which failure modes appear immediately."
+category: "Foundations"
+order: 1
+difficulty: "fundamental"
+readingTime: 5
+tags: ["fundamentals", "reliability", "scalability", "failures"]
+related: ["consistency/cap-theorem", "replication/replication", "reliability/failure-retry-patterns"]
+featured: true
+diagram: "fundamentals"
+mentalModel: "Independent machines + unreliable network + shared product promise"
+remember: "Distribution buys scale and fault isolation by replacing local certainty with coordination, delay, and partial failure."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>A distributed system is a set of independent computers that cooperate to look like one product. Teams distribute work to scale capacity, place computation near users, isolate failures, and survive machine loss—but every network boundary introduces delay and uncertainty.</QuickRefresher>
+
+## What problem does distribution solve?
+
+One machine has finite CPU, memory, storage, and network capacity. It is also one fault domain. Distribution lets the system add capacity horizontally, replicate critical state, and continue when some components fail.
+
+<KeyInsight title="The network is not a function call">A local call either returns or crashes the process. A remote call can succeed while the response is lost, arrive twice, arrive late, or never arrive. The caller cannot infer the remote outcome from a timeout.</KeyInsight>
+
+## The core realities
+
+1. **No shared clock:** machines disagree about time.
+2. **No instant global state:** every observation may already be stale.
+3. **Partial failure:** one component can fail while the rest keep running.
+4. **Finite coordination:** stronger guarantees require communication, which costs latency and availability.
+
+<TradeoffTable rows={[
+  {choice:"Horizontal scale",gain:"More capacity and smaller fault domains",cost:"Partitioning, routing, and rebalancing"},
+  {choice:"Replication",gain:"Availability and durability",cost:"Lag, conflicts, and coordination"},
+  {choice:"Service boundaries",gain:"Independent ownership and deployment",cost:"Remote-call failure and operational complexity"}
+]} />
+
+<FailureScenario title="A request times out after updating state">The client does not know whether the write failed or only the response failed. Retrying without an idempotency key can duplicate the operation; refusing to retry can lose the user’s intent.</FailureScenario>
+
+## Where this appears
+
+Cloud services, databases, queues, caches, search engines, and even a mobile application talking to an API are distributed systems. The relevant question is not whether a product is distributed, but where its failure and consistency boundaries are.
+
+<InterviewQuestion level="Fundamental" question="What makes a distributed system harder than a multithreaded program?">Independent failure, message delay or loss, and the absence of shared memory or a perfectly shared clock mean no participant can know the complete current state.</InterviewQuestion>
+
+<ManagerLens>
+- Which dependency failure can violate the user promise?
+- Which state is authoritative, and who owns recovery?
+- What load and failure assumptions justify each boundary?
+- Can the design degrade instead of failing as one unit?
+</ManagerLens>

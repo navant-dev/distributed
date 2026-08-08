@@ -1,0 +1,47 @@
+---
+title: "Kafka & Distributed Logs"
+description: "Use partitioned append-only logs for durable event streams, replay, and independent consumer progress."
+category: "Messaging"
+order: 11
+difficulty: "intermediate"
+readingTime: 7
+tags: ["kafka", "distributed-log", "streaming", "partitions"]
+related: ["partitioning/consistent-hashing", "replication/replication", "reliability/failure-retry-patterns"]
+featured: true
+diagram: "distributed-log"
+mentalModel: "Append to a partition → replicate → advance offset → consumers replay independently"
+remember: "A distributed log provides order within a partition, not across the whole topic; keys decide where that ordering boundary lives."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>A distributed log stores immutable records in ordered partitions. Producers append records, brokers replicate them, and consumer groups track offsets. Retention decouples consumption from production, enabling replay and multiple independent views of the same events.</QuickRefresher>
+
+## How it works
+
+A record key selects a partition. One consumer in a group owns each partition at a time, which preserves partition order while spreading work. Acknowledgement policy determines how many replicas must persist an append before success.
+
+<KeyInsight title="The partition key is an architecture decision">It defines the unit of ordering, parallelism, load concentration, and future scaling. A convenient key with skewed traffic can cap the throughput of the whole pipeline.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"More partitions",gain:"More parallel producers and consumers",cost:"More metadata, files, rebalances, and no cross-partition order"},
+  {choice:"Long retention",gain:"Replay, audit, and new consumers",cost:"Storage and recovery duration"},
+  {choice:"At-least-once",gain:"Avoid silent loss after crashes",cost:"Consumers must be idempotent"}
+]} />
+
+<FailureScenario title="A consumer processes an event then crashes before committing its offset">The event is delivered again after restart. The handler needs an idempotency key, deduplication record, or transactional output-and-offset commit.</FailureScenario>
+
+<FailureScenario title="One key produces 80% of traffic">All records for that key land on one partition to preserve order. Adding consumers does not help; the design must split the key, relax ordering, or isolate the hot workload.</FailureScenario>
+
+<InterviewQuestion level="Senior" question="Does Kafka guarantee global ordering within a topic?">No. Kafka preserves order within each partition. Global order would require routing through one ordering boundary, which limits parallelism.</InterviewQuestion>
+
+<ManagerLens>
+- Who owns schema compatibility and retention policy?
+- What is the replay plan and its downstream blast radius?
+- Are lag alerts expressed in business time, not only record count?
+- Can consumers safely process duplicates and poison messages?
+</ManagerLens>

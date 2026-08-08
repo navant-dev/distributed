@@ -3,27 +3,29 @@ export const curriculum = [
   {
     group: "Foundations",
     items: [
-      { label: "Distributed systems", href: "/#featured", ready: false },
+      { label: "Distributed systems", href: "/topics/foundations/distributed-systems/", ready: true },
       { label: "CAP theorem", href: "/topics/consistency/cap-theorem/", ready: true },
-      { label: "Consistency models", href: "/#featured", ready: false },
+      { label: "PACELC", href: "/topics/consistency/pacelc/", ready: true },
+      { label: "Consistency models", href: "/topics/consistency/consistency-models/", ready: true },
       { label: "Time & ordering", href: "/roadmap/#time-ordering", ready: false },
     ],
   },
   {
     group: "Core building blocks",
     items: [
-      { label: "Replication", href: "/roadmap/#replication", ready: false },
+      { label: "Replication", href: "/topics/replication/replication/", ready: true },
+      { label: "Quorums", href: "/topics/consensus/quorums/", ready: true },
       { label: "Raft consensus", href: "/topics/consensus/raft/", ready: true },
       { label: "Consistent hashing", href: "/topics/partitioning/consistent-hashing/", ready: true },
-      { label: "Transactions", href: "/roadmap/#transactions", ready: false },
+      { label: "Transactions / 2PC", href: "/topics/transactions/two-phase-commit/", ready: true },
     ],
   },
   {
     group: "At scale",
     items: [
-      { label: "Data systems", href: "/roadmap/#data-systems", ready: false },
-      { label: "Messaging", href: "/roadmap/#messaging", ready: false },
-      { label: "Reliability", href: "/roadmap/#reliability", ready: false },
+      { label: "LSM trees", href: "/topics/storage/lsm-trees/", ready: true },
+      { label: "Kafka / distributed logs", href: "/topics/messaging/distributed-logs/", ready: true },
+      { label: "Failure & retries", href: "/topics/reliability/failure-retry-patterns/", ready: true },
       { label: "Multi-region", href: "/roadmap/#multi-region", ready: false },
     ],
   },

@@ -1,0 +1,51 @@
+---
+title: "Consistency Models"
+description: "Choose the weakest consistency promise that still protects the product’s invariants and user expectations."
+category: "Consistency"
+order: 4
+difficulty: "intermediate"
+readingTime: 7
+tags: ["consistency", "linearizability", "eventual-consistency", "causality"]
+related: ["consistency/cap-theorem", "consistency/pacelc", "consensus/quorums"]
+featured: false
+diagram: "consistency"
+mentalModel: "A consistency model defines which histories clients are allowed to observe"
+remember: "Consistency is a client-visible promise about order and freshness—not a binary property of an entire database."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>A consistency model constrains what values a read may return and how operations appear ordered. Stronger models simplify application reasoning; weaker models reduce coordination and often improve latency and availability.</QuickRefresher>
+
+## The useful spectrum
+
+- **Linearizable:** each operation appears atomic and respects real-time order.
+- **Sequential:** all clients agree on one order, which need not match wall-clock order.
+- **Causal:** causes appear before their effects; unrelated writes may differ in order.
+- **Session guarantees:** one user sees read-your-writes or monotonic reads.
+- **Eventual:** replicas converge after writes stop, without promising when.
+
+<KeyInsight title="Stronger is not automatically better">The right model is the weakest promise that still preserves business invariants and a coherent user experience. Extra strength can spend latency and availability without delivering product value.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"Linearizable",gain:"Simple invariants and one current value",cost:"Coordination on the critical path"},
+  {choice:"Causal / session",gain:"Intuitive user journeys with less global coordination",cost:"More metadata and narrower guarantees"},
+  {choice:"Eventual",gain:"Low-latency local operation and availability",cost:"Stale reads, conflicts, and convergence logic"}
+]} />
+
+<FailureScenario title="A user updates a profile then reads from a lagging replica">Eventual consistency may show the old profile. Read-your-writes can pin the session to a replica or carry a version token so the user does not move backward.</FailureScenario>
+
+<FailureScenario title="Two clients reserve the last item">A stale availability read is harmless only until both writes commit. Inventory requires an authoritative conditional write even if browsing remains eventually consistent.</FailureScenario>
+
+<InterviewQuestion level="Senior" question="Is sequential consistency stronger than causal consistency?">Yes. Sequential consistency requires one total order observed by everyone. Causal consistency orders only operations related by cause and effect, allowing concurrent operations to appear differently.</InterviewQuestion>
+
+<ManagerLens>
+- Write the consistency contract per workflow, not per vendor.
+- Identify invariants separately from freshness preferences.
+- Define acceptable staleness in time or versions.
+- Test user journeys while replicas lag, not only after convergence.
+</ManagerLens>
