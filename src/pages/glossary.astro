@@ -1,0 +1,22 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { glossary } from "@/data/glossary";
+const letters = [...new Set(glossary.map((item) => item.term[0]))];
+---
+<BaseLayout title="Distributed Systems Glossary — DistillSys" description="Plain-language definitions for distributed systems terminology, from anti-entropy to write-ahead logs.">
+  <main id="main-content" class="glossary-main">
+    <header class="glossary-hero"><span class="eyebrow">Plain language first</span><h1>Glossary</h1><p>Fast definitions for the vocabulary behind distributed systems design discussions.</p><label><span class="sr-only">Filter glossary terms</span><i aria-hidden="true">⌕</i><input type="search" data-glossary-query placeholder="Filter terms or definitions…" /></label></header>
+    <nav class="letter-nav" aria-label="Glossary letters">{letters.map((letter)=><a href={`#letter-${letter}`}>{letter}</a>)}</nav>
+    <p class="glossary-count" data-glossary-count>{glossary.length} terms</p>
+    <div class="glossary-list">{letters.map((letter)=><section id={`letter-${letter}`} data-letter-section><h2>{letter}</h2><dl>{glossary.filter((item)=>item.term.startsWith(letter)).map((item)=><div data-glossary-item data-search={`${item.term} ${item.definition} ${item.related}`.toLowerCase()}><dt>{item.term}<span>{item.related}</span></dt><dd>{item.definition}</dd></div>)}</dl></section>)}</div>
+    <div class="library-empty" data-glossary-empty hidden><b>No matching term.</b><span>Try a broader word or search the topic library.</span></div>
+  </main>
+  <script>
+    const query = document.querySelector('[data-glossary-query]');
+    const items = [...document.querySelectorAll('[data-glossary-item]')];
+    const sections = [...document.querySelectorAll('[data-letter-section]')];
+    const count = document.querySelector('[data-glossary-count]');
+    const empty = document.querySelector('[data-glossary-empty]');
+    query?.addEventListener('input', () => { const value = query instanceof HTMLInputElement ? query.value.trim().toLowerCase() : ''; let visible = 0; items.forEach((item)=>{ if (!(item instanceof HTMLElement)) return; const show = !value || item.dataset.search?.includes(value); item.hidden = !show; if (show) visible++; }); sections.forEach((section)=>{ if (section instanceof HTMLElement) section.hidden = !section.querySelector('[data-glossary-item]:not([hidden])'); }); if (count) count.textContent = `${visible} term${visible === 1 ? '' : 's'}`; if (empty instanceof HTMLElement) empty.hidden = visible !== 0; });
+  </script>
+</BaseLayout>

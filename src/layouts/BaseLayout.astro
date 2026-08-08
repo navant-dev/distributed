@@ -1,6 +1,7 @@
 ---
 import Header from "@/components/layout/Header.astro";
 import Footer from "@/components/layout/Footer.astro";
+import SearchDialog from "@/components/search/SearchDialog.astro";
 import "@/styles/global.css";
 import { sitePath } from "@/utils/paths";
 const { title = "DistillSys", description = "Distributed systems, made simple.", image = "/social/distillsys-og.png" } = Astro.props;
@@ -30,6 +31,7 @@ const socialImage = new URL(sitePath(image), Astro.site);
   </head>
   <body>
     <Header />
+    <SearchDialog />
     <slot />
     <Footer />
     <script>

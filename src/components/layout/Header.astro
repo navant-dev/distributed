@@ -9,6 +9,7 @@ import { sitePath } from "@/utils/paths";
     {primaryNav.map((item) => <a href={sitePath(item.href)}>{item.label}</a>)}
   </nav>
   <div class="header-actions">
+    <button class="search-toggle" type="button" data-search-open aria-label="Search topics"><span aria-hidden="true">⌕</span><small>Search</small><kbd>/</kbd></button>
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Change color theme"><span aria-hidden="true">◐</span></button>
     <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-navigation"><span></span><span></span><span></span><span class="sr-only">Open navigation</span></button>
   </div>

@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { sitePath } from "@/utils/paths";
+const topics = (await getCollection("topics")).sort((a,b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title));
+const categories = [...new Set(topics.map((topic) => topic.data.category))];
+---
+<BaseLayout title="Distributed Systems Topics — DistillSys" description="Browse concise visual refreshers for distributed systems concepts, trade-offs, and failure modes.">
+  <main id="main-content" class="library-main">
+    <header class="library-hero"><span class="eyebrow">Twelve core mental models</span><h1>Topic library</h1><p>Browse the MVP curriculum by category, or search for the problem you are trying to reason about.</p><button class="btn btn-primary" type="button" data-search-open>Search all topics <span>⌕</span></button></header>
+    <section class="library-tools" aria-label="Filter topics"><div class="filter-pills"><button class="active" type="button" data-topic-filter="all">All <span>{topics.length}</span></button>{categories.map((category)=><button type="button" data-topic-filter={category}>{category} <span>{topics.filter((topic)=>topic.data.category===category).length}</span></button>)}</div><label><span class="sr-only">Filter topic cards</span><input type="search" data-topic-query placeholder="Filter this page…" /></label></section>
+    <p class="library-count" data-topic-count>{topics.length} topics</p>
+    <div class="library-grid" data-topic-grid>{topics.map((topic)=><article data-topic-card data-category={topic.data.category.toLowerCase()} data-search={`${topic.data.title} ${topic.data.description} ${topic.data.tags.join(" ")}`.toLowerCase()}><div><span>{topic.data.category}</span><small>{topic.data.readingTime} min · {topic.data.difficulty}</small></div><h2>{topic.data.title}</h2><p>{topic.data.description}</p><div class="topic-tags">{topic.data.tags.slice(0,3).map((tag)=><span>#{tag}</span>)}</div><a href={sitePath(`/topics/${topic.id}/`)}>Open visual refresher →</a></article>)}</div>
+    <div class="library-empty" data-topic-empty hidden><b>No matching topics yet.</b><span>Try a broader term or use the full search.</span></div>
+  </main>
+  <script>
+    const cards = [...document.querySelectorAll('[data-topic-card]')];
+    const filters = [...document.querySelectorAll('[data-topic-filter]')];
+    const queryInput = document.querySelector('[data-topic-query]');
+    const count = document.querySelector('[data-topic-count]');
+    const empty = document.querySelector('[data-topic-empty]');
+    let category = 'all';
+    const filterTopics = () => {
+      const query = queryInput instanceof HTMLInputElement ? queryInput.value.trim().toLowerCase() : '';
+      let visible = 0;
+      cards.forEach((card) => { if (!(card instanceof HTMLElement)) return; const show = (category === 'all' || card.dataset.category === category.toLowerCase()) && (!query || card.dataset.search?.includes(query)); card.hidden = !show; if (show) visible++; });
+      if (count) count.textContent = `${visible} topic${visible === 1 ? '' : 's'}`; if (empty instanceof HTMLElement) empty.hidden = visible !== 0;
+    };
+    filters.forEach((button) => button.addEventListener('click', () => { if (!(button instanceof HTMLButtonElement)) return; category = button.dataset.topicFilter || 'all'; filters.forEach((item)=>item.classList.toggle('active',item===button)); filterTopics(); }));
+    queryInput?.addEventListener('input', filterTopics);
+  </script>
+</BaseLayout>

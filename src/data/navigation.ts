@@ -33,10 +33,10 @@ export const curriculum = [
 
 export const primaryNav = [
   { label: "Learn", href: "/#featured" },
-  { label: "Topics", href: "/topics/consistency/cap-theorem/" },
+  { label: "Topics", href: "/topics/" },
   { label: "Roadmap", href: "/roadmap/" },
   { label: "Cheatsheets", href: "/#coming-soon" },
   { label: "System Designs", href: "/#coming-soon" },
   { label: "Interview Prep", href: "/#coming-soon" },
-  { label: "Glossary", href: "/#coming-soon" },
+  { label: "Glossary", href: "/glossary/" },
 ] as const;
