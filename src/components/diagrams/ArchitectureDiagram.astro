@@ -1,0 +1,9 @@
+---
+const { type } = Astro.props;
+---
+<figure class:list={["architecture-diagram", `diagram-${type}`]} role="img" aria-label={type === "cap" ? "A network partition forcing a choice between consistency and availability" : type === "raft" ? "A Raft leader replicating log entries to four followers" : "Keys distributed around a consistent hash ring"}>
+  <figcaption>{type === "cap" ? "Partition changes the rules" : type === "raft" ? "One leader. One ordered log." : "Only neighboring keys move"}</figcaption>
+  {type === "cap" && <div class="cap-visual"><div class="cap-node"><i>C</i><span>Consistent</span></div><div class="partition-line"><b>NETWORK</b><em>PARTITION</em></div><div class="cap-node available"><i>A</i><span>Available</span></div></div>}
+  {type === "raft" && <div class="raft-visual"><div class="raft-node leader"><small>term 8</small><b>Leader</b><i>1 2 3 4</i></div><div class="raft-links"><span></span><span></span><span></span><span></span></div><div class="followers">{[1,2,3,4].map((n) => <div class="raft-node"><small>node {n}</small><b>Follower</b><i>1 2 3 <em>4</em></i></div>)}</div></div>}
+  {type === "hash-ring" && <div class="ring-visual"><div class="hash-ring"><span class="ring-node rn1">A</span><span class="ring-node rn2">B</span><span class="ring-node rn3">C</span>{[1,2,3,4,5,6,7,8].map((n) => <i class={`key k${n}`}>{n}</i>)}</div><div class="ring-legend"><span><i></i>Node</span><span><i></i>Key</span><p>Add a node → move one slice, not every key.</p></div></div>}
+</figure>

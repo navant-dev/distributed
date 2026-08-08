@@ -1,0 +1,71 @@
+---
+title: "CAP Theorem"
+description: "Understand what a network partition really forces you to choose—and what CAP does not say."
+category: "Consistency"
+order: 1
+difficulty: "fundamental"
+readingTime: 5
+tags: ["cap", "consistency", "availability", "partitions"]
+related: ["consensus/raft", "partitioning/consistent-hashing"]
+featured: true
+diagram: "cap"
+mentalModel: "Partition occurs → preserve one answer or preserve every response"
+remember: "CAP is a failure-mode decision. During a partition, preserve consistency or availability for the operation—not both."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>
+CAP says that when replicas cannot communicate, a distributed system cannot guarantee both **a single consistent answer** and **a successful response from every reachable replica**. It must choose per operation: reject or delay some work, or accept that answers may temporarily diverge.
+</QuickRefresher>
+
+## What problem does CAP help us reason about?
+
+Replicas normally coordinate over a network. Networks can delay, drop, or isolate messages while every machine appears healthy. Once two sides cannot communicate, neither can know whether the other side is down or merely unreachable.
+
+CAP gives us language for the product decision hidden inside that uncertainty.
+
+<KeyInsight title="Partition tolerance is usually not optional">
+In a real multi-node system, the network will eventually partition. The practical question is therefore not “pick two of three.” It is: **when partitioned, which operations must preserve one truth, and which may remain available?**
+</KeyInsight>
+
+## The three properties, plainly
+
+1. **Consistency** — every successful read behaves as if there were one up-to-date copy.
+2. **Availability** — every request reaching a healthy node receives a non-error response.
+3. **Partition tolerance** — the system continues with messages lost or delayed between groups of nodes.
+
+<TradeoffTable rows={[
+  { choice: "CP during partition", gain: "One authoritative answer and protected invariants", cost: "Some requests wait or fail" },
+  { choice: "AP during partition", gain: "Every reachable region can keep serving", cost: "Conflicts or stale reads must be reconciled" },
+  { choice: "Per-operation policy", gain: "Guarantees match business consequence", cost: "A more explicit application model" }
+]} />
+
+## What happens if?
+
+<FailureScenario title="Two regions lose connectivity">
+If both regions accept updates to the same record, the service remains available but may create conflicting versions. If only the elected region accepts writes, the system preserves one order but users in the isolated region cannot complete that operation.
+</FailureScenario>
+
+<FailureScenario title="The network is merely slow, not broken">
+The system cannot distinguish delay from failure with certainty. A timeout converts uncertainty into policy: wait longer for stronger confidence, or respond sooner with weaker freshness.
+</FailureScenario>
+
+## Where this appears in real systems
+
+Banking ledgers often reject writes without authoritative coordination. Shopping carts and social feeds frequently accept temporary divergence. Many databases let teams select consistency per request rather than declaring the whole product “CP” or “AP.”
+
+<InterviewQuestion level="Senior" question="Why is ‘pick any two of CAP’ misleading?">
+Because partition tolerance is a condition imposed by the network, not a steady-state feature to casually disable. Before a partition, a system can provide both consistency and availability. During one, it must decide which successful operations preserve a single truth and which remain responsive.
+</InterviewQuestion>
+
+<ManagerLens>
+- Which business invariant becomes unsafe with two valid answers?
+- What user experience do we provide when coordination is unavailable?
+- How will conflicts be detected, surfaced, and repaired?
+- Is the availability target defined per operation or only for the overall service?
+</ManagerLens>

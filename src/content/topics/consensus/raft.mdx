@@ -1,0 +1,75 @@
+---
+title: "Raft Consensus"
+description: "Agree on one sequence of operations despite node crashes, delayed messages, and network partitions."
+category: "Consensus"
+order: 2
+difficulty: "intermediate"
+readingTime: 7
+tags: ["raft", "consensus", "replication", "leader-election"]
+related: ["consistency/cap-theorem"]
+featured: true
+diagram: "raft"
+mentalModel: "Elect → Propose → Replicate → Majority → Commit → Apply"
+remember: "Replication copies state. Raft establishes which ordered sequence of state changes is authoritative."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>
+Raft elects one leader to order commands. The leader appends each command to its log, replicates it to followers, and marks it committed after a majority stores it. Every healthy node eventually applies the same committed log in the same order.
+</QuickRefresher>
+
+## What problem does Raft solve?
+
+Copies alone do not establish authority. If several replicas accept competing writes, which sequence survives? Raft gives a cluster one durable, ordered history even as leaders fail and messages arrive late.
+
+<KeyInsight title="The majority is an overlap guarantee">
+Any two majorities share at least one node. That overlap carries knowledge from the previous committed history into the next election, preventing an isolated minority from inventing a competing committed log.
+</KeyInsight>
+
+## How it works
+
+1. **Elect** — followers time out, become candidates, increment the term, and request votes.
+2. **Propose** — the elected leader receives a client command and appends a log entry.
+3. **Replicate** — the leader sends the entry to followers using `AppendEntries`.
+4. **Commit** — after a majority acknowledges, the entry becomes committed.
+5. **Apply** — each node applies committed entries to its state machine in order.
+
+<TradeoffTable rows={[
+  { choice: "3-node cluster", gain: "Tolerates one failure with low coordination cost", cost: "No progress after two failures" },
+  { choice: "5-node cluster", gain: "Tolerates two failures", cost: "More infrastructure and replication traffic" },
+  { choice: "Synchronous majority", gain: "Committed history survives leader failure", cost: "Write latency includes quorum round trips" }
+]} />
+
+## What happens if?
+
+<FailureScenario title="The leader crashes before majority acknowledgement">
+The entry is uncommitted. A future leader may overwrite it. The client must retry because it cannot know whether the command survived.
+</FailureScenario>
+
+<FailureScenario title="The leader commits, then crashes before replying">
+The command is durable, but the client sees a timeout. A retry can execute the command twice unless the API uses an idempotency key or request identity.
+</FailureScenario>
+
+<FailureScenario title="A minority is isolated">
+It may continue reading local state if policy allows, but it cannot elect a leader or commit new entries. Safety is preserved by sacrificing progress in the minority.
+</FailureScenario>
+
+## Real systems
+
+Raft appears in etcd, Consul, TiKV, CockroachDB ranges, and many control planes. It is best for relatively small consensus groups coordinating metadata or replicated state—not for broadcasting every event to thousands of nodes.
+
+<InterviewQuestion level="Staff+" question="Why can an acknowledged client request still need idempotency?">
+The server may commit the request and fail before the response reaches the client. The client observes an ambiguous timeout and retries. Consensus protects the log’s order; idempotency protects the business operation from duplicate intent.
+</InterviewQuestion>
+
+<ManagerLens>
+- Which latency percentile includes a cross-zone majority round trip?
+- Who owns quorum loss and membership-change procedures?
+- Are backup, restore, and disaster recovery tested independently of replication?
+- Do client APIs safely retry ambiguous outcomes?
+</ManagerLens>

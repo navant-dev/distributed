@@ -1,0 +1,4 @@
+---
+const { title } = Astro.props;
+---
+<section class="failure-card"><div class="failure-heading"><span aria-hidden="true">!</span><div><small>What happens if?</small><h3>{title}</h3></div></div><div class="failure-copy"><slot /></div></section>

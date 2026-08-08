@@ -1,0 +1,30 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { sitePath } from "@/utils/paths";
+const featured = [
+  { title:"CAP Theorem", category:"Consistency", description:"Reason clearly when a network partition forces a choice.", href:"/topics/consistency/cap-theorem/", icon:"C", ready:true },
+  { title:"Raft Consensus", category:"Consensus", description:"Build one authoritative log despite node and network failure.", href:"/topics/consensus/raft/", icon:"R", ready:true },
+  { title:"Consistent Hashing", category:"Partitioning", description:"Scale a cluster while moving the smallest possible slice of data.", href:"/topics/partitioning/consistent-hashing/", icon:"H", ready:true },
+  { title:"Distributed Transactions", category:"Transactions", description:"Coordinate atomic work across independent services and stores.", icon:"2PC", ready:false },
+  { title:"Event-Driven Systems", category:"Messaging", description:"Decouple work in time without losing control of delivery.", icon:"E", ready:false },
+  { title:"Multi-Region Architecture", category:"Reliability", description:"Balance latency, sovereignty, consistency, RPO, and RTO.", icon:"M", ready:false },
+];
+const paths = [
+  {n:"01",title:"Foundations",text:"Refresh the primitives: failure, time, consistency, replication, and scale."},
+  {n:"02",title:"Interview Prep",text:"Practice the follow-up questions that distinguish senior-level reasoning."},
+  {n:"03",title:"Architect Path",text:"Connect technical choices to invariants, risk, cost, and operations."},
+  {n:"04",title:"Manager Path",text:"Review designs through failure impact, ownership, and decision quality."},
+];
+---
+<BaseLayout title="DistillSys — Distributed Systems, Made Simple" description="Visual refreshers, trade-offs, failure scenarios, and architecture reasoning for distributed systems engineers.">
+  <main id="main-content" class="home-main">
+    <section class="hero">
+      <div class="hero-copy"><span class="eyebrow">The visual field guide for technical leaders</span><h1>Distributed Systems,<br/><span>Made Simple.</span></h1><p>Concepts. Visuals. Trade-offs. Everything you need to refresh, understand, and design reliable distributed systems.</p><div class="hero-buttons"><a class="btn btn-primary" href={sitePath("/topics/consistency/cap-theorem/")}>Start learning <span>→</span></a><a class="btn btn-secondary" href={sitePath("/roadmap/")}>Explore roadmap</a></div></div>
+      <div class="hero-topology" role="img" aria-label="Clients connect through a load balancer to services and data stores"><div class="topology"><div class="topology-node tn-client"><b>Clients</b><small>request</small></div><div class="topology-node tn-lb"><b>Load balancer</b><small>route</small></div><div class="topology-node tn-service"><b>Services</b><small>compute</small></div><div class="topology-node tn-db"><b>Data systems</b><small>DB · cache · queue</small></div><span class="topology-line"></span></div></div>
+    </section>
+    <section class="audience-banner"><b>Designed for Engineers. Useful for Managers.</b><p>Brush up quickly, teach your team, review architectures, or prepare for interviews.</p></section>
+    <section class="home-section" id="featured"><header class="section-head"><div><span class="eyebrow">Start with the decisions that matter</span><h2>Featured topics</h2></div><p>Each visual one-pager moves from intuition to mechanics, trade-offs, failure scenarios, and real-world implications.</p></header><div class="featured-grid">{featured.map((topic) => <article class:list={["topic-card",!topic.ready&&"planned"]}><div class="topic-card-top"><span>{topic.category}</span><span>{topic.ready?"Live":"Coming soon"}</span></div><div class="topic-card-icon"><span>{topic.icon}</span></div><h3>{topic.title}</h3><p>{topic.description}</p>{topic.ready?<a href={sitePath(topic.href!)}>Open refresher →</a>:<span>On the roadmap</span>}</article>)}</div></section>
+    <section class="home-section alt"><header class="section-head"><div><span class="eyebrow">Choose your depth</span><h2>Learning paths</h2></div><p>The same concepts, organized around what you need to do next.</p></header><div class="path-grid">{paths.map((path)=><article class="path-card"><span>{path.n}</span><h3>{path.title}</h3><p>{path.text}</p></article>)}</div></section>
+    <section class="home-section" id="coming-soon"><div class="coming-soon"><div><span>Next in DistillSys</span><h2>Cheatsheets, question banks, and system designs.</h2><p>The content platform is ready. The curriculum will grow in deliberate, reviewable slices.</p></div><a class="btn btn-secondary" href={sitePath("/roadmap/")}>See what’s next →</a></div></section>
+  </main>
+</BaseLayout>

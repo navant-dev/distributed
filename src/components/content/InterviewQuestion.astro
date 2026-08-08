@@ -1,0 +1,4 @@
+---
+const { question, level = "Senior" } = Astro.props;
+---
+<details class="interview-question"><summary><span><small>{level} interview mode</small><b>{question}</b></span><i>Show answer</i></summary><div><slot /></div></details>

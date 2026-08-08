@@ -1,0 +1,35 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Sidebar from "@/components/layout/Sidebar.astro";
+import ArchitectureDiagram from "@/components/diagrams/ArchitectureDiagram.astro";
+import { sitePath } from "@/utils/paths";
+const { title, description, category, difficulty, readingTime, tags, diagram, mentalModel, remember, slug } = Astro.props;
+---
+<BaseLayout title={`${title} — DistillSys`} description={description}>
+  <div class="docs-shell">
+    <Sidebar currentPath={Astro.url.pathname} />
+    <main id="main-content" class="topic-main">
+      <article class="topic-article">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href={sitePath("/")}>Home</a><span>/</span><a href={sitePath("/roadmap/")}>{category}</a><span>/</span><b>{title}</b></nav>
+        <header class="topic-hero">
+          <div class="topic-meta"><span>{category}</span><span>{difficulty}</span><span>{readingTime} min read</span></div>
+          <h1>{title}</h1><p>{description}</p>
+          <div class="topic-actions"><button class="read-button" type="button" data-mark-read data-slug={slug}><span aria-hidden="true">✓</span> <span data-read-copy>Mark as read</span></button><span>2–5 minute refresher</span></div>
+        </header>
+        <ArchitectureDiagram type={diagram} />
+        <section class="mental-model"><span>Mental model</span><p>{mentalModel}</p></section>
+        <div class="mdx-content"><slot /></div>
+        <aside class="remember-this"><span>Remember this</span><p>{remember}</p></aside>
+        <div class="topic-tags">{tags.map((tag: string) => <span>#{tag}</span>)}</div>
+      </article>
+    </main>
+  </div>
+  <script>
+    const button = document.querySelector('[data-mark-read]');
+    if (button instanceof HTMLButtonElement) {
+      const slug = button.dataset.slug; let read = JSON.parse(localStorage.getItem('distillsys-read') || '[]');
+      const render = () => { const done = read.includes(slug); button.classList.toggle('completed', done); const copy = button.querySelector('[data-read-copy]'); if (copy) copy.textContent = done ? 'Completed' : 'Mark as read'; };
+      render(); button.addEventListener('click', () => { read = read.includes(slug) ? read.filter((item: string) => item !== slug) : [...read, slug]; localStorage.setItem('distillsys-read', JSON.stringify(read)); render(); });
+    }
+  </script>
+</BaseLayout>
