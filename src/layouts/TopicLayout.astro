@@ -3,7 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Sidebar from "@/components/layout/Sidebar.astro";
 import ArchitectureDiagram from "@/components/diagrams/ArchitectureDiagram.astro";
 import { sitePath } from "@/utils/paths";
-const { title, description, category, difficulty, readingTime, tags, diagram, mentalModel, remember, slug } = Astro.props;
+const { title, description, category, difficulty, readingTime, tags, diagram, mentalModel, remember, slug, previous, next, relatedTopics = [] } = Astro.props;
 ---
 <BaseLayout title={`${title} — DistillSys`} description={description}>
   <div class="docs-shell">
@@ -21,6 +21,11 @@ const { title, description, category, difficulty, readingTime, tags, diagram, me
         <div class="mdx-content"><slot /></div>
         <aside class="remember-this"><span>Remember this</span><p>{remember}</p></aside>
         <div class="topic-tags">{tags.map((tag: string) => <span>#{tag}</span>)}</div>
+        {relatedTopics.length > 0 && <section class="related-topics"><span class="eyebrow">Continue the idea</span><h2>Related topics</h2><div>{relatedTopics.map((topic: any) => <a href={sitePath(`/topics/${topic.id}/`)}><small>{topic.data.category}</small><b>{topic.data.title}</b><span>Read next →</span></a>)}</div></section>}
+        <nav class="topic-pagination" aria-label="Topic pagination">
+          {previous ? <a href={sitePath(`/topics/${previous.id}/`)}><small>← Previous</small><b>{previous.data.title}</b></a> : <span></span>}
+          {next ? <a href={sitePath(`/topics/${next.id}/`)}><small>Next →</small><b>{next.data.title}</b></a> : <span></span>}
+        </nav>
       </article>
     </main>
   </div>
@@ -29,7 +34,7 @@ const { title, description, category, difficulty, readingTime, tags, diagram, me
     if (button instanceof HTMLButtonElement) {
       const slug = button.dataset.slug; let read = JSON.parse(localStorage.getItem('distillsys-read') || '[]');
       const render = () => { const done = read.includes(slug); button.classList.toggle('completed', done); const copy = button.querySelector('[data-read-copy]'); if (copy) copy.textContent = done ? 'Completed' : 'Mark as read'; };
-      render(); button.addEventListener('click', () => { read = read.includes(slug) ? read.filter((item: string) => item !== slug) : [...read, slug]; localStorage.setItem('distillsys-read', JSON.stringify(read)); render(); });
+      render(); button.addEventListener('click', () => { read = read.includes(slug) ? read.filter((item: string) => item !== slug) : [...read, slug]; localStorage.setItem('distillsys-read', JSON.stringify(read)); render(); window.dispatchEvent(new CustomEvent('distillsys-progress')); });
     }
   </script>
 </BaseLayout>

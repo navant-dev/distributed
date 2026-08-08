@@ -1,0 +1,47 @@
+---
+title: "Replication"
+description: "Copy state across machines without confusing more copies with stronger correctness."
+category: "Replication"
+order: 6
+difficulty: "fundamental"
+readingTime: 6
+tags: ["replication", "leader-follower", "lag", "durability"]
+related: ["consensus/quorums", "consensus/raft", "consistency/consistency-models"]
+featured: false
+diagram: "replication"
+mentalModel: "Accept change → order it → copy it → confirm it → repair lag"
+remember: "Replication creates copies. The acknowledgement and conflict protocol determines what those copies guarantee."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>Replication keeps multiple copies of data for availability, read scale, durability, and geographic proximity. Common shapes are leader/follower, multi-leader, and leaderless; each moves ordering and conflict work to a different place.</QuickRefresher>
+
+## How it works
+
+In leader/follower replication, one node orders writes and streams them to followers. Synchronous acknowledgement waits for selected followers. Asynchronous acknowledgement responds earlier and lets replicas catch up later.
+
+<KeyInsight title="A replica is not automatically a backup">Replicas quickly copy both valid changes and accidental deletes. Recovery still needs point-in-time backups, tested restore procedures, and protection from correlated failure.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"Synchronous",gain:"Lower acknowledged-data loss and fresher followers",cost:"Write latency and sensitivity to slow replicas"},
+  {choice:"Asynchronous",gain:"Fast writes and fault isolation",cost:"Lag and possible loss after leader failure"},
+  {choice:"Multi-leader",gain:"Local writes in multiple regions",cost:"Conflict detection and resolution"}
+]} />
+
+<FailureScenario title="Leader fails after local write, before replication">If the client received success too early, the promoted follower may not contain the write. The system has acknowledged durability it cannot preserve.</FailureScenario>
+
+<FailureScenario title="A follower falls hours behind">Serving reads from it expands user-visible staleness. Rejoining may require a snapshot rather than replaying an unbounded log, and catch-up traffic can overload the leader.</FailureScenario>
+
+<InterviewQuestion level="Intermediate" question="What is the difference between replication and consensus?">Replication copies state. Consensus makes participants agree on which decisions are authoritative and in what order despite failures. A replication topology may use consensus, but the concepts are not interchangeable.</InterviewQuestion>
+
+<ManagerLens>
+- What does a successful write promise about replica count and geography?
+- What is the maximum measured replication lag?
+- How is promotion fenced to prevent split brain?
+- Are backups isolated from the replication control plane?
+</ManagerLens>

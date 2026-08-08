@@ -38,9 +38,8 @@ const socialImage = new URL(sitePath(image), Astro.site);
       const menuToggle = document.querySelector('[data-menu-toggle]');
       const mobileNav = document.querySelector('[data-mobile-nav]');
       menuToggle?.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); if (mobileNav instanceof HTMLElement) mobileNav.hidden = !open; });
-      const completed = JSON.parse(localStorage.getItem('distillsys-read') || '[]');
-      const bar = document.querySelector('[data-progress-bar]'); const label = document.querySelector('[data-progress-label]');
-      if (bar instanceof HTMLProgressElement) bar.value = completed.length; if (label) label.textContent = `${Math.round((completed.length / 3) * 100)}%`;
+      const updateProgress = () => { const completed = JSON.parse(localStorage.getItem('distillsys-read') || '[]'); const bar = document.querySelector('[data-progress-bar]'); const label = document.querySelector('[data-progress-label]'); if (bar instanceof HTMLProgressElement) { bar.value = completed.length; if (label) label.textContent = `${Math.round((completed.length / bar.max) * 100)}%`; } };
+      updateProgress(); window.addEventListener('distillsys-progress', updateProgress);
     </script>
   </body>
 </html>

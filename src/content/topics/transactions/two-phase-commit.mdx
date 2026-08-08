@@ -1,0 +1,51 @@
+---
+title: "Distributed Transactions & 2PC"
+description: "Coordinate one atomic outcome across independent participants—and understand the blocking cost."
+category: "Transactions"
+order: 9
+difficulty: "advanced"
+readingTime: 7
+tags: ["transactions", "two-phase-commit", "atomicity", "saga"]
+related: ["consensus/raft", "reliability/failure-retry-patterns", "consistency/consistency-models"]
+featured: true
+diagram: "two-phase"
+mentalModel: "Prepare everyone → record one decision → commit or abort everyone"
+remember: "2PC coordinates atomic commitment; it does not remove failure, and participants may block while the final decision is unavailable."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>Two-phase commit coordinates one atomic outcome across participants. In **prepare**, each participant durably promises it can commit. The coordinator then records and broadcasts **commit** or **abort**. The protocol protects atomicity but can block when the decision is unavailable.</QuickRefresher>
+
+## What problem does 2PC solve?
+
+Some invariants span resources: debit one account and credit another, or reserve inventory and record payment. Without coordination, a partial success can expose an impossible business state.
+
+<KeyInsight title="Prepared means locked into uncertainty">After voting yes, a participant cannot decide alone. It must preserve locks or tentative state until it learns the coordinator’s durable decision.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"2PC",gain:"Atomic outcome across transactional participants",cost:"Blocking, locks, and coordinator dependency"},
+  {choice:"Saga",gain:"Independent local commits and long-running workflows",cost:"Visible intermediate states and compensations"},
+  {choice:"Single-owner redesign",gain:"Simpler correctness and failure recovery",cost:"Less service or data independence"}
+]} />
+
+<FailureScenario title="Coordinator fails after every participant prepares">Participants cannot safely infer commit or abort. They remain in-doubt until the coordinator recovers or a replicated transaction manager exposes the recorded decision.</FailureScenario>
+
+<FailureScenario title="Commit succeeds but the client times out">The client must retry with the same transaction or idempotency identifier. Treating the retry as new work can double-apply the business operation.</FailureScenario>
+
+## When to avoid it
+
+Do not stretch synchronous 2PC across unreliable, independently operated services by default. If the business can tolerate intermediate state and compensating actions, a saga often aligns better with service ownership.
+
+<InterviewQuestion level="Senior" question="Why is classic two-phase commit called blocking?">Once a participant votes yes, it cannot unilaterally abort or commit. If the coordinator’s decision is unreachable, the participant may hold prepared state and locks until that decision becomes available.</InterviewQuestion>
+
+<ManagerLens>
+- Is the cross-system invariant truly atomic, or can workflow state be explicit?
+- What is the timeout and recovery procedure for in-doubt transactions?
+- Are compensations business-correct, not merely technical rollbacks?
+- Which team owns the end-to-end outcome?
+</ManagerLens>

@@ -1,0 +1,47 @@
+---
+title: "Quorums"
+description: "Use overlapping read and write sets to reason about replica authority, freshness, and failure tolerance."
+category: "Consensus"
+order: 5
+difficulty: "intermediate"
+readingTime: 6
+tags: ["quorum", "replication", "consistency", "availability"]
+related: ["replication/replication", "consensus/raft", "consistency/consistency-models"]
+featured: false
+diagram: "quorum"
+mentalModel: "Choose enough replicas that every read intersects the latest successful write"
+remember: "Quorum arithmetic creates overlap, but versions, repair, and the write protocol determine whether that overlap yields the guarantee you expect."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>With **N** replicas, a write waits for **W** acknowledgements and a read consults **R** replicas. When `R + W > N`, every read set overlaps every successful write set. When `W > N/2`, two successful write quorums must overlap.</QuickRefresher>
+
+## What problem do quorums solve?
+
+Waiting for every replica makes one slow node block progress. Waiting for one replica risks stale or conflicting state. Quorums provide a tunable middle ground between coordination cost and fault tolerance.
+
+<KeyInsight title="Overlap is necessary, not sufficient">A read must identify the newest valid version among its responses, and conflicting writes need a deterministic rule. `R + W > N` alone does not magically provide linearizability.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"Large W",gain:"More durable and fresher acknowledged writes",cost:"Higher write latency and lower write availability"},
+  {choice:"Large R",gain:"Better chance of observing the newest version",cost:"Higher read latency and fanout"},
+  {choice:"Sloppy quorum",gain:"Continued writes during replica loss",cost:"The sets may not overlap; hinted handoff is required"}
+]} />
+
+<FailureScenario title="Two replicas are unreachable in N=5, W=3">A write can still succeed with the remaining three. If a third replica is lost, the system must reject the write or weaken its policy.</FailureScenario>
+
+<FailureScenario title="A read sees three different versions">Version metadata—term/index, timestamp, or vector clock—selects or reconciles the result. Read repair can then update stale replicas outside the user’s critical path.</FailureScenario>
+
+<InterviewQuestion level="Senior" question="Why does R + W > N not necessarily guarantee linearizability?">The rule guarantees set overlap, not that writes are totally ordered or that the read chooses a committed latest value. Sloppy quorums, clock-based conflict resolution, and concurrent writes can violate linearizable behavior.</InterviewQuestion>
+
+<ManagerLens>
+- Which latency path pays for the quorum?
+- How many fault domains can be lost before reads or writes stop?
+- Are quorums strict or sloppy during incidents?
+- How are stale replicas detected and repaired?
+</ManagerLens>

@@ -9,7 +9,12 @@ export async function getStaticPaths() {
 
 const { topic } = Astro.props;
 const { Content } = await render(topic);
+const topics = (await getCollection("topics")).sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title));
+const index = topics.findIndex((item) => item.id === topic.id);
+const previous = index > 0 ? topics[index - 1] : null;
+const next = index < topics.length - 1 ? topics[index + 1] : null;
+const related = topic.data.related.map((id) => topics.find((item) => item.id === id)).filter(Boolean);
 ---
-<TopicLayout {...topic.data} slug={topic.id}>
+<TopicLayout {...topic.data} slug={topic.id} previous={previous} next={next} relatedTopics={related}>
   <Content />
 </TopicLayout>

@@ -1,0 +1,47 @@
+---
+title: "LSM Trees"
+description: "Understand how write-optimized storage turns random updates into sequential writes and pays later through compaction."
+category: "Storage"
+order: 10
+difficulty: "intermediate"
+readingTime: 6
+tags: ["lsm", "storage", "compaction", "sstable"]
+related: ["messaging/distributed-logs", "replication/replication", "partitioning/consistent-hashing"]
+featured: false
+diagram: "lsm"
+mentalModel: "Log safely → buffer in memory → flush sorted files → compact levels"
+remember: "LSM trees make writes cheap by deferring organization; compaction later pays the sorting, cleanup, and space-reclamation bill."
+---
+import QuickRefresher from "@/components/content/QuickRefresher.astro";
+import KeyInsight from "@/components/content/KeyInsight.astro";
+import FailureScenario from "@/components/content/FailureScenario.astro";
+import TradeoffTable from "@/components/content/TradeoffTable.astro";
+import InterviewQuestion from "@/components/content/InterviewQuestion.astro";
+import ManagerLens from "@/components/content/ManagerLens.astro";
+
+<QuickRefresher>An LSM tree records writes in a write-ahead log, applies them to an in-memory sorted structure, then flushes immutable sorted-string tables (SSTables). Background compaction merges tables, discards overwritten values, and reclaims tombstones.</QuickRefresher>
+
+## What problem does it solve?
+
+Updating data in place causes random I/O. LSM trees batch and sort changes so the storage engine performs large sequential writes, which is especially effective for write-heavy workloads.
+
+<KeyInsight title="Compaction is part of foreground reliability">Although compaction runs in the background, it competes for CPU, disk bandwidth, and space. If it falls behind, read amplification and disk usage rise until foreground latency suffers.</KeyInsight>
+
+<TradeoffTable rows={[
+  {choice:"Size-tiered compaction",gain:"High write throughput",cost:"More space and overlapping files during reads"},
+  {choice:"Leveled compaction",gain:"Predictable reads and lower space amplification",cost:"Higher write amplification"},
+  {choice:"Large memtable",gain:"Fewer, larger flushes",cost:"More memory and longer recovery replay"}
+]} />
+
+<FailureScenario title="The process crashes before a memtable flush">Recovery replays the durable WAL into memory. Acknowledging before the WAL is safely persisted can lose writes even though the client saw success.</FailureScenario>
+
+<FailureScenario title="Compaction cannot keep up">SSTables accumulate, reads touch more files, tombstones remain, and free disk space collapses. Backpressure must slow ingestion before the node enters an unrecoverable spiral.</FailureScenario>
+
+<InterviewQuestion level="Intermediate" question="Why do LSM trees need Bloom filters?">A Bloom filter can prove that an SSTable definitely does not contain a key, avoiding unnecessary disk reads. False positives still cause reads, but false negatives are not allowed.</InterviewQuestion>
+
+<ManagerLens>
+- Monitor compaction debt, write/read/space amplification, and free-space headroom.
+- Test recovery with the largest plausible WAL.
+- Match compaction policy to workload, not vendor defaults.
+- Budget maintenance bandwidth separately from user traffic.
+</ManagerLens>
