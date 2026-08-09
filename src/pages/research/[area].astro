@@ -1,0 +1,12 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ResearchArchive from "@/components/research/ResearchArchive.astro";
+import { researchAreas, papersForArea } from "@/data/research-papers";
+import { sitePath } from "@/utils/paths";
+export function getStaticPaths(){ return researchAreas.map((area)=>({params:{area:area.id},props:{area}})); }
+const { area } = Astro.props;
+const papers = papersForArea(area.id);
+---
+<BaseLayout title={`${area.name} Research Papers — DistillSys`} description={`Recent ${area.name.toLowerCase()} research from 2024 through 2026, with abstract and paper links.`}>
+  <main id="main-content" class="research-main"><nav class="breadcrumb" aria-label="Breadcrumb"><a href={sitePath("/")}>Home</a><span>/</span><a href={sitePath("/research/")}>Research</a><span>/</span><b>{area.name}</b></nav><header class="research-area-hero"><span class="eyebrow">Research area · 2024–2026</span><h1>{area.name}</h1><p>{area.description}</p><strong>{papers.length} curated papers</strong></header><nav class="research-sibling-nav" aria-label="Other research areas">{researchAreas.map((item)=><a class:list={[item.id===area.id&&"active"]} href={sitePath(`/research/${item.id}/`)}>{item.name}</a>)}</nav><ResearchArchive areaIds={[area.id]} showAreaHeadings={false} /></main>
+</BaseLayout>
