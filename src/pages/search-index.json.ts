@@ -42,8 +42,8 @@ export const GET: APIRoute = async () => {
     title: paper.title,
     description: paper.summary,
     category: `${paper.year} Research`,
-    tags: paper.topics,
-    summary: `${paper.authors} ${researchAreas.find((area)=>area.id===paper.area)?.name || "Research"}`,
+    tags: [...paper.topics, ...(paper.industry ?? [])],
+    summary: `${paper.authors} ${(paper.industry ?? []).join(" ")} ${paper.source} ${researchAreas.find((area)=>area.id===paper.area)?.name || "Research"}`,
     url: sitePath(`/research/${paper.area}/`),
   }));
   return new Response(JSON.stringify(index), { headers: { "Content-Type": "application/json; charset=utf-8" } });
