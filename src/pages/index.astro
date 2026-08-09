@@ -10,10 +10,10 @@ const featured = [
   { title:"Multi-Region Architecture", category:"Reliability", description:"Balance latency, sovereignty, consistency, RPO, and RTO.", icon:"M", ready:false },
 ];
 const paths = [
-  {n:"01",title:"Foundations",text:"Refresh the primitives: failure, time, consistency, replication, and scale."},
-  {n:"02",title:"Interview Prep",text:"Practice the follow-up questions that distinguish senior-level reasoning."},
-  {n:"03",title:"Architect Path",text:"Connect technical choices to invariants, risk, cost, and operations."},
-  {n:"04",title:"Manager Path",text:"Review designs through failure impact, ownership, and decision quality."},
+  {n:"01",title:"Foundations",text:"Refresh the primitives: failure, time, consistency, replication, and scale.",href:"/roadmap/#foundations",action:"Start the path"},
+  {n:"02",title:"Interview Prep",text:"Practice the follow-up questions that distinguish senior-level reasoning.",href:"/interview/",action:"Practice questions"},
+  {n:"03",title:"Architect Path",text:"Connect technical choices to invariants, risk, cost, and operations.",href:"/roadmap/#data-systems",action:"Explore architecture"},
+  {n:"04",title:"Manager Path",text:"Review designs through failure impact, ownership, and decision quality.",href:"/interview/?level=manager#question-bank-title",action:"Open manager mode"},
 ];
 ---
 <BaseLayout title="DistillSys — Distributed Systems, Made Simple" description="Visual refreshers, trade-offs, failure scenarios, and architecture reasoning for distributed systems engineers.">
@@ -24,7 +24,7 @@ const paths = [
     </section>
     <section class="audience-banner"><b>Designed for Engineers. Useful for Managers.</b><p>Brush up quickly, teach your team, review architectures, or prepare for interviews.</p></section>
     <section class="home-section" id="featured"><header class="section-head"><div><span class="eyebrow">Start with the decisions that matter</span><h2>Featured topics</h2></div><p>Each visual one-pager moves from intuition to mechanics, trade-offs, failure scenarios, and real-world implications.</p></header><div class="featured-grid">{featured.map((topic) => <article class:list={["topic-card",!topic.ready&&"planned"]}><div class="topic-card-top"><span>{topic.category}</span><span>{topic.ready?"Live":"Coming soon"}</span></div><div class="topic-card-icon"><span>{topic.icon}</span></div><h3>{topic.title}</h3><p>{topic.description}</p>{topic.ready?<a href={sitePath(topic.href!)}>Open refresher →</a>:<span>On the roadmap</span>}</article>)}</div></section>
-    <section class="home-section alt"><header class="section-head"><div><span class="eyebrow">Choose your depth</span><h2>Learning paths</h2></div><p>The same concepts, organized around what you need to do next.</p></header><div class="path-grid">{paths.map((path)=><article class="path-card"><span>{path.n}</span><h3>{path.title}</h3><p>{path.text}</p></article>)}</div></section>
+    <section class="home-section alt"><header class="section-head"><div><span class="eyebrow">Choose your depth</span><h2>Learning paths</h2></div><p>The same concepts, organized around what you need to do next.</p></header><div class="path-grid">{paths.map((path)=><a class="path-card" href={sitePath(path.href)}><span>{path.n}</span><h3>{path.title}</h3><p>{path.text}</p><b>{path.action} →</b></a>)}</div></section>
     <section class="home-section" id="coming-soon"><div class="coming-soon"><div><span>Reference library</span><h2>Eight printable engineering cheatsheets.</h2><p>Keep the essential sequences, trade-offs, and failure warnings close during architecture reviews.</p></div><a class="btn btn-secondary" href={sitePath("/cheatsheets/")}>Open cheatsheets →</a></div></section>
   </main>
 </BaseLayout>

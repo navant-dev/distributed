@@ -10,6 +10,7 @@
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "check:links": "node scripts/check-links.mjs",
     "lint": "ASTRO_TELEMETRY_DISABLED=1 astro check",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview"
   },
