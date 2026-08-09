@@ -28,7 +28,7 @@ const socialImage = new URL(sitePath(image), Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <title>{title}</title>
     <script is:inline>
-      (() => { const saved = localStorage.getItem('distillsys-theme'); const theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = theme; })();
+      (() => { const preference = localStorage.getItem('distillsys-theme') || 'system'; const theme = preference === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; })();
     </script>
   </head>
   <body>
@@ -38,7 +38,11 @@ const socialImage = new URL(sitePath(image), Astro.site);
     <Footer />
     <script>
       const toggle = document.querySelector('[data-theme-toggle]');
-      toggle?.addEventListener('click', () => { const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; localStorage.setItem('distillsys-theme', next); });
+      const colorScheme = matchMedia('(prefers-color-scheme: dark)');
+      const applyTheme = (preference: string) => { const theme = preference === 'system' ? (colorScheme.matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; localStorage.setItem('distillsys-theme', preference); const label = `Color theme: ${preference[0].toUpperCase()}${preference.slice(1)}`; toggle?.setAttribute('aria-label', label); toggle?.setAttribute('title', label); const icon = toggle?.querySelector('[data-theme-icon]'); if (icon) icon.textContent = preference === 'light' ? '☀' : preference === 'dark' ? '●' : '◐'; };
+      applyTheme(document.documentElement.dataset.themePreference || 'system');
+      toggle?.addEventListener('click', () => { const order = ['system','light','dark']; const current = document.documentElement.dataset.themePreference || 'system'; applyTheme(order[(order.indexOf(current) + 1) % order.length]); });
+      colorScheme.addEventListener('change', () => { if (document.documentElement.dataset.themePreference === 'system') applyTheme('system'); });
       const menuToggle = document.querySelector('[data-menu-toggle]');
       const mobileNav = document.querySelector('[data-mobile-nav]');
       menuToggle?.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); if (mobileNav instanceof HTMLElement) mobileNav.hidden = !open; });

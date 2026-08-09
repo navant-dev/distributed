@@ -1,0 +1,14 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { systemDesigns } from "@/data/system-designs";
+import { sitePath } from "@/utils/paths";
+---
+<BaseLayout title="System Design Walkthroughs — DistillSys" description="End-to-end distributed-system architecture walkthroughs connected to the concepts behind each decision.">
+  <main id="main-content" class="design-library-main">
+    <header class="design-library-hero"><span class="eyebrow">Phase 7 · architecture in context</span><h1>System design<br/>walkthroughs.</h1><p>Move from individual concepts to complete systems. Each walkthrough starts with the request path, makes the important trade-offs explicit, and stress-tests the design with failures.</p></header>
+    <aside class="design-library-note"><b>How to use these</b><span>State the invariant first. Trace one request. Then challenge every dependency with latency, duplication, overload, and partial failure.</span></aside>
+    <div class="design-library-grid">
+      {systemDesigns.map((design, index) => <article><div><span>{String(index + 1).padStart(2,"0")}</span><small>{design.scale}</small></div><h2>{design.title}</h2><p>{design.description}</p><ul>{design.concepts.slice(0,3).map((concept)=><li>{concept.label}</li>)}</ul><a href={sitePath(`/system-designs/${design.slug}/`)}>Open walkthrough →</a></article>)}
+    </div>
+  </main>
+</BaseLayout>

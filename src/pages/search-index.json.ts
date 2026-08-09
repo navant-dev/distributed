@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { sitePath } from "@/utils/paths";
+import { systemDesigns } from "@/data/system-designs";
 
 export const GET: APIRoute = async () => {
   const topics = await getCollection("topics");
@@ -28,5 +29,13 @@ export const GET: APIRoute = async () => {
     summary: "Consistency, consensus, partitioning, transactions, storage, messaging, reliability, and multi-region rules of thumb.",
     url: sitePath("/cheatsheets/"),
   });
+  systemDesigns.forEach((design) => index.push({
+    title: design.title,
+    description: design.description,
+    category: "System Design",
+    tags: design.concepts.map((concept) => concept.label),
+    summary: [...design.coreFlow, ...design.components.map((component) => component.responsibility), ...design.failures.map((failure) => `${failure.scenario} ${failure.response}`)].join(" "),
+    url: sitePath(`/system-designs/${design.slug}/`),
+  }));
   return new Response(JSON.stringify(index), { headers: { "Content-Type": "application/json; charset=utf-8" } });
 };

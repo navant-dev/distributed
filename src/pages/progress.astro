@@ -1,0 +1,29 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { roadmapStages } from "@/data/roadmap";
+import { sitePath } from "@/utils/paths";
+const topics = (await getCollection("topics")).map((topic) => ({ slug: topic.id, title: topic.data.title, category: topic.data.category, href: sitePath(`/topics/${topic.id}/`) }));
+---
+<BaseLayout title="Your Learning Progress — DistillSys" description="Review completed lessons, bookmarks, and recently viewed distributed-systems topics stored in this browser.">
+  <main id="main-content" class="progress-main">
+    <header class="progress-hero"><span class="eyebrow">Private, browser-local learning state</span><h1>Your progress.</h1><p>Pick up where you left off, revisit saved concepts, and see how much of each learning stage you have completed.</p></header>
+    <div class="progress-summary"><article><strong data-progress-total>0%</strong><span>curriculum complete</span></article><article><strong data-completed-total>0</strong><span>lessons completed</span></article><article><strong data-bookmark-total>0</strong><span>bookmarks</span></article></div>
+    <section class="progress-section"><header><span class="eyebrow">Learning paths</span><h2>Stage progress</h2></header><div class="stage-progress">{roadmapStages.map((stage)=><article data-stage-slugs={stage.topics.map((topic)=>topic.href.replace(/^\/topics\//,"").replace(/\/$/,"")).join(",")}><div><b>{stage.title}</b><span data-stage-label>0%</span></div><progress max={stage.topics.length} value="0">0%</progress><small>{stage.topics.length} lessons</small></article>)}</div></section>
+    <section class="progress-section"><header><span class="eyebrow">Saved for later</span><h2>Bookmarks</h2></header><div class="progress-topic-list" data-bookmark-list></div><p class="progress-empty" data-bookmark-empty>No bookmarks yet. Save a lesson from any topic page.</p></section>
+    <section class="progress-section"><header><span class="eyebrow">Continue learning</span><h2>Recently viewed</h2></header><div class="progress-topic-list" data-recent-list></div><p class="progress-empty" data-recent-empty>No recently viewed lessons yet.</p></section>
+    <button class="progress-reset" type="button" data-progress-reset>Clear learning data</button>
+  </main>
+  <script is:inline define:vars={{ topics }}>
+    const completed = JSON.parse(localStorage.getItem('distillsys-read') || '[]');
+    const bookmarks = JSON.parse(localStorage.getItem('distillsys-bookmarks') || '[]');
+    const recent = JSON.parse(localStorage.getItem('distillsys-recent') || '[]');
+    const total = topics.length;
+    const setText = (selector, value) => { const node = document.querySelector(selector); if (node) node.textContent = value; };
+    setText('[data-progress-total]', `${Math.round((completed.length / total) * 100)}%`); setText('[data-completed-total]', String(completed.length)); setText('[data-bookmark-total]', String(bookmarks.length));
+    document.querySelectorAll('[data-stage-slugs]').forEach((node) => { if (!(node instanceof HTMLElement)) return; const slugs = (node.dataset.stageSlugs || '').split(','); const count = slugs.filter((slug) => completed.includes(slug)).length; const progress = node.querySelector('progress'); if (progress instanceof HTMLProgressElement) progress.value = count; const label = node.querySelector('[data-stage-label]'); if (label) label.textContent = `${Math.round((count / slugs.length) * 100)}%`; });
+    const renderList = (selector, emptySelector, slugs) => { const list = document.querySelector(selector); const empty = document.querySelector(emptySelector); const entries = slugs.map((slug) => topics.find((topic) => topic.slug === slug)).filter(Boolean); if (empty instanceof HTMLElement) empty.hidden = entries.length > 0; entries.forEach((topic) => { const link = document.createElement('a'); link.href = topic.href; link.innerHTML = `<small>${topic.category}</small><b>${topic.title}</b><span>Open refresher →</span>`; list?.append(link); }); };
+    renderList('[data-bookmark-list]','[data-bookmark-empty]',bookmarks); renderList('[data-recent-list]','[data-recent-empty]',recent);
+    document.querySelector('[data-progress-reset]')?.addEventListener('click', () => { if (!confirm('Clear completed lessons, bookmarks, and recent history from this browser?')) return; ['distillsys-read','distillsys-bookmarks','distillsys-recent'].forEach((key)=>localStorage.removeItem(key)); location.reload(); });
+  </script>
+</BaseLayout>
