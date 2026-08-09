@@ -28,7 +28,7 @@ const socialImage = new URL(sitePath(image), Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <title>{title}</title>
     <script is:inline>
-      (() => { const preference = localStorage.getItem('distillsys-theme') || 'system'; const theme = preference === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; })();
+      (() => { let preference = 'system'; try { preference = localStorage.getItem('distillsys-theme') || 'system'; } catch {} const theme = preference === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; })();
     </script>
   </head>
   <body>
@@ -37,15 +37,21 @@ const socialImage = new URL(sitePath(image), Astro.site);
     <slot />
     <Footer />
     <script>
-      const toggle = document.querySelector('[data-theme-toggle]');
-      const colorScheme = matchMedia('(prefers-color-scheme: dark)');
-      const applyTheme = (preference: string) => { const theme = preference === 'system' ? (colorScheme.matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; localStorage.setItem('distillsys-theme', preference); const label = `Color theme: ${preference[0].toUpperCase()}${preference.slice(1)}`; toggle?.setAttribute('aria-label', label); toggle?.setAttribute('title', label); const icon = toggle?.querySelector('[data-theme-icon]'); if (icon) icon.textContent = preference === 'light' ? '☀' : preference === 'dark' ? '●' : '◐'; };
-      applyTheme(document.documentElement.dataset.themePreference || 'system');
-      toggle?.addEventListener('click', () => { const order = ['system','light','dark']; const current = document.documentElement.dataset.themePreference || 'system'; applyTheme(order[(order.indexOf(current) + 1) % order.length]); });
-      colorScheme.addEventListener('change', () => { if (document.documentElement.dataset.themePreference === 'system') applyTheme('system'); });
       const menuToggle = document.querySelector('[data-menu-toggle]');
       const mobileNav = document.querySelector('[data-mobile-nav]');
-      menuToggle?.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); if (mobileNav instanceof HTMLElement) mobileNav.hidden = !open; });
+      const setMenu = (open: boolean) => { menuToggle?.setAttribute('aria-expanded', String(open)); const label = menuToggle?.querySelector('.sr-only'); if (label) label.textContent = open ? 'Close navigation' : 'Open navigation'; if (mobileNav instanceof HTMLElement) mobileNav.hidden = !open; };
+      menuToggle?.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true'));
+      mobileNav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMenu(false)));
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && menuToggle?.getAttribute('aria-expanded') === 'true') { setMenu(false); if (menuToggle instanceof HTMLElement) menuToggle.focus(); } });
+
+      const toggle = document.querySelector('[data-theme-toggle]');
+      const colorScheme = matchMedia('(prefers-color-scheme: dark)');
+      const applyTheme = (preference: string) => { const theme = preference === 'system' ? (colorScheme.matches ? 'dark' : 'light') : preference; document.documentElement.dataset.theme = theme; document.documentElement.dataset.themePreference = preference; try { localStorage.setItem('distillsys-theme', preference); } catch {} const label = `Color theme: ${preference[0].toUpperCase()}${preference.slice(1)}`; toggle?.setAttribute('aria-label', label); toggle?.setAttribute('title', label); const icon = toggle?.querySelector('[data-theme-icon]'); if (icon) icon.textContent = preference === 'light' ? '☀' : preference === 'dark' ? '●' : '◐'; };
+      applyTheme(document.documentElement.dataset.themePreference || 'system');
+      toggle?.addEventListener('click', () => { const order = ['system','light','dark']; const current = document.documentElement.dataset.themePreference || 'system'; applyTheme(order[(order.indexOf(current) + 1) % order.length]); });
+      const syncSystemTheme = () => { if (document.documentElement.dataset.themePreference === 'system') applyTheme('system'); };
+      const legacyColorScheme = colorScheme as unknown as { addListener?: (listener: () => void) => void };
+      if (typeof colorScheme.addEventListener === 'function') colorScheme.addEventListener('change', syncSystemTheme); else legacyColorScheme.addListener?.(syncSystemTheme);
       const updateProgress = () => { const completed = JSON.parse(localStorage.getItem('distillsys-read') || '[]'); const bar = document.querySelector('[data-progress-bar]'); const label = document.querySelector('[data-progress-label]'); if (bar instanceof HTMLProgressElement) { bar.value = completed.length; if (label) label.textContent = `${Math.round((completed.length / bar.max) * 100)}%`; } };
       updateProgress(); window.addEventListener('distillsys-progress', updateProgress);
     </script>
