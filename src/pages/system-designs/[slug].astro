@@ -1,0 +1,23 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { systemDesigns, type SystemDesign } from "@/data/system-designs";
+import { sitePath } from "@/utils/paths";
+
+export function getStaticPaths() {
+  return systemDesigns.map((design) => ({ params: { slug: design.slug }, props: { design } }));
+}
+const { design } = Astro.props as { design: SystemDesign };
+---
+<BaseLayout title={`${design.title} System Design — DistillSys`} description={design.description}>
+  <main id="main-content" class="design-main">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href={sitePath("/")}>Home</a><span>/</span><a href={sitePath("/system-designs/")}>System designs</a><span>/</span><b>{design.title}</b></nav>
+    <header class="design-hero"><div><span class="eyebrow">End-to-end walkthrough</span><h1>{design.title}</h1><p>{design.description}</p></div><aside><small>Reference scale</small><b>{design.scale}</b></aside></header>
+    <section class="design-flow" aria-labelledby="request-flow"><header><span>01</span><div><small>Trace the system</small><h2 id="request-flow">Request flow</h2></div></header><ol>{design.coreFlow.map((step,index)=><li><span>{index+1}</span><b>{step}</b>{index + 1 !== design.coreFlow.length ? <i aria-hidden="true">→</i> : null}</li>)}</ol></section>
+    <section class="design-section"><header><span>02</span><div><small>Assign ownership</small><h2>Core components</h2></div></header><div class="component-grid">{design.components.map((component)=><article><h3>{component.name}</h3><p>{component.responsibility}</p></article>)}</div></section>
+    <section class="design-section"><header><span>03</span><div><small>Make trade-offs explicit</small><h2>Architecture decisions</h2></div></header><div class="decision-table" role="table" aria-label="Architecture decisions"><div role="row"><b role="columnheader">Choice</b><b role="columnheader">Why</b><b role="columnheader">Cost</b></div>{design.decisions.map((decision)=><div role="row"><strong role="cell">{decision.choice}</strong><span role="cell">{decision.why}</span><span role="cell">{decision.cost}</span></div>)}</div></section>
+    <section class="design-section"><header><span>04</span><div><small>Failure-first review</small><h2>What happens if…?</h2></div></header><div class="design-failures">{design.failures.map((failure)=><article><h3>{failure.scenario}</h3><p>{failure.response}</p></article>)}</div></section>
+    <section class="design-section"><header><span>05</span><div><small>Build from primitives</small><h2>Concepts used</h2></div></header><div class="design-concepts">{design.concepts.map((concept)=><a href={sitePath(concept.href)}>{concept.label}<span>Open refresher →</span></a>)}</div></section>
+    <aside class="design-leader-lens"><span>Manager / architect lens</span><ul>{design.leaderLens.map((item)=><li>{item}</li>)}</ul></aside>
+    <nav class="design-pagination" aria-label="System design navigation"><a href={sitePath("/system-designs/")}>← All system designs</a></nav>
+  </main>
+</BaseLayout>

@@ -12,5 +12,5 @@ const liveCount = curriculum.reduce((total, section) => total + section.items.re
       <ul>{section.items.map((item) => <li><a href={sitePath(item.href)} class:list={[currentPath === sitePath(item.href) && "active", !item.ready && "planned"]}><span>{item.label}</span>{item.ready ? <i aria-label="Available"></i> : <small>Soon</small>}</a></li>)}</ul>
     </section>
   ))}
-  <div class="sidebar-progress"><div><span>Your progress</span><b data-progress-label>0%</b></div><progress value="0" max={liveCount} data-progress-bar>0 of {liveCount}</progress><small>Stored only in this browser</small></div>
+  <div class="sidebar-progress"><div><span>Your progress</span><b data-progress-label>0%</b></div><progress value="0" max={liveCount} data-progress-bar>0 of {liveCount}</progress><a href={sitePath("/progress/")}>Bookmarks & history →</a><small>Stored only in this browser</small></div>
 </aside>

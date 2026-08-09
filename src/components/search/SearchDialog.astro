@@ -5,7 +5,7 @@ import { sitePath } from "@/utils/paths";
   <div class="search-shell">
     <header><div><span class="eyebrow">Search DistillSys</span><h2 id="search-title">Find a concept</h2></div><button type="button" data-search-close aria-label="Close search">×</button></header>
     <label class="search-field"><span class="sr-only">Search topics</span><i aria-hidden="true">⌕</i><input type="search" data-search-input placeholder="Try “quorum”, “replication”, or “retry”" autocomplete="off" /><kbd>/</kbd></label>
-    <p class="search-status" data-search-status>Type at least two characters to search topics and interview prep.</p>
+    <p class="search-status" data-search-status>Type at least two characters to search lessons, designs, and interview prep.</p>
     <div class="search-results" data-search-results aria-live="polite"></div>
   </div>
 </dialog>
@@ -24,7 +24,7 @@ import { sitePath } from "@/utils/paths";
       if (status) status.textContent = 'Loading the topic index…';
       const response = await fetch(dialog.dataset.indexUrl || '/search-index.json');
       index = await response.json();
-      if (status) status.textContent = 'Type at least two characters to search topics and interview prep.';
+      if (status) status.textContent = 'Type at least two characters to search lessons, designs, and interview prep.';
     }
   };
   document.querySelectorAll('[data-search-open]').forEach((button) => button.addEventListener('click', openSearch));
@@ -35,7 +35,7 @@ import { sitePath } from "@/utils/paths";
   input?.addEventListener('input', () => {
     if (!(input instanceof HTMLInputElement) || !(results instanceof HTMLElement) || !index) return;
     const query = input.value.trim().toLowerCase(); results.replaceChildren();
-    if (query.length < 2) { if (status) status.textContent = 'Type at least two characters to search topics and interview prep.'; return; }
+    if (query.length < 2) { if (status) status.textContent = 'Type at least two characters to search lessons, designs, and interview prep.'; return; }
     const matches = index.filter((item) => [item.title,item.description,item.category,item.tags.join(' '),item.summary].join(' ').toLowerCase().includes(query)).slice(0, 8);
     if (status) status.textContent = matches.length ? `${matches.length} result${matches.length === 1 ? '' : 's'}` : `No topics found for “${input.value.trim()}”.`;
     matches.forEach((item) => {

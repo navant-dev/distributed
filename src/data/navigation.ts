@@ -10,7 +10,7 @@ export const primaryNav = [
   { label: "Topics", href: "/topics/" },
   { label: "Roadmap", href: "/roadmap/" },
   { label: "Cheatsheets", href: "/cheatsheets/" },
-  { label: "System Designs", href: "/#coming-soon" },
+  { label: "System Designs", href: "/system-designs/" },
   { label: "Interview Prep", href: "/interview/" },
   { label: "Glossary", href: "/glossary/" },
 ] as const;

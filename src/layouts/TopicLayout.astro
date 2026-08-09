@@ -14,7 +14,7 @@ const { title, description, category, difficulty, readingTime, tags, diagram, me
         <header class="topic-hero">
           <div class="topic-meta"><span>{category}</span><span>{difficulty}</span><span>{readingTime} min read</span></div>
           <h1>{title}</h1><p>{description}</p>
-          <div class="topic-actions"><button class="read-button" type="button" data-mark-read data-slug={slug}><span aria-hidden="true">✓</span> <span data-read-copy>Mark as read</span></button><span>2–5 minute refresher</span></div>
+          <div class="topic-actions"><button class="read-button" type="button" data-mark-read data-slug={slug}><span aria-hidden="true">✓</span> <span data-read-copy>Mark as read</span></button><button class="read-button" type="button" data-bookmark data-slug={slug}><span aria-hidden="true">◇</span> <span data-bookmark-copy>Bookmark</span></button><span>2–5 minute refresher</span></div>
         </header>
         <ArchitectureDiagram type={diagram} />
         <section class="mental-model"><span>Mental model</span><p>{mentalModel}</p></section>
@@ -36,5 +36,13 @@ const { title, description, category, difficulty, readingTime, tags, diagram, me
       const render = () => { const done = read.includes(slug); button.classList.toggle('completed', done); const copy = button.querySelector('[data-read-copy]'); if (copy) copy.textContent = done ? 'Completed' : 'Mark as read'; };
       render(); button.addEventListener('click', () => { read = read.includes(slug) ? read.filter((item: string) => item !== slug) : [...read, slug]; localStorage.setItem('distillsys-read', JSON.stringify(read)); render(); window.dispatchEvent(new CustomEvent('distillsys-progress')); });
     }
+    const bookmark = document.querySelector('[data-bookmark]');
+    if (bookmark instanceof HTMLButtonElement) {
+      const slug = bookmark.dataset.slug; let bookmarks = JSON.parse(localStorage.getItem('distillsys-bookmarks') || '[]');
+      const renderBookmark = () => { const saved = bookmarks.includes(slug); bookmark.classList.toggle('completed', saved); const copy = bookmark.querySelector('[data-bookmark-copy]'); if (copy) copy.textContent = saved ? 'Bookmarked' : 'Bookmark'; };
+      renderBookmark(); bookmark.addEventListener('click', () => { bookmarks = bookmarks.includes(slug) ? bookmarks.filter((item: string) => item !== slug) : [...bookmarks, slug]; localStorage.setItem('distillsys-bookmarks', JSON.stringify(bookmarks)); renderBookmark(); });
+    }
+    const recentSlug = document.querySelector('[data-mark-read]')?.getAttribute('data-slug');
+    if (recentSlug) { const recent = JSON.parse(localStorage.getItem('distillsys-recent') || '[]').filter((item: string) => item !== recentSlug); localStorage.setItem('distillsys-recent', JSON.stringify([recentSlug, ...recent].slice(0, 8))); }
   </script>
 </BaseLayout>
