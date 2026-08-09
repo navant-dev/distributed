@@ -10,6 +10,7 @@ An Astro and MDX visual field guide for engineers and technical leaders who need
 - Polished homepage, learning roadmap, topic library, glossary, printable cheatsheets, and interview bank
 - 33 visual topic lessons with four interactive learning labs
 - 12 end-to-end system-design walkthroughs connected back to core concepts
+- Static research-paper index covering five areas and publication years 2024–2026
 - Browser-local completion tracking, bookmarks, recent history, and Light/Dark/System themes
 - Static GitHub Pages deployment at `navant.dev`
 

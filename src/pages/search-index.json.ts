@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { sitePath } from "@/utils/paths";
 import { systemDesigns } from "@/data/system-designs";
+import { researchPapers, researchAreas } from "@/data/research-papers";
 
 export const GET: APIRoute = async () => {
   const topics = await getCollection("topics");
@@ -36,6 +37,14 @@ export const GET: APIRoute = async () => {
     tags: design.concepts.map((concept) => concept.label),
     summary: [...design.coreFlow, ...design.components.map((component) => component.responsibility), ...design.failures.map((failure) => `${failure.scenario} ${failure.response}`)].join(" "),
     url: sitePath(`/system-designs/${design.slug}/`),
+  }));
+  researchPapers.forEach((paper) => index.push({
+    title: paper.title,
+    description: paper.summary,
+    category: `${paper.year} Research`,
+    tags: paper.topics,
+    summary: `${paper.authors} ${researchAreas.find((area)=>area.id===paper.area)?.name || "Research"}`,
+    url: sitePath(`/research/${paper.area}/`),
   }));
   return new Response(JSON.stringify(index), { headers: { "Content-Type": "application/json; charset=utf-8" } });
 };

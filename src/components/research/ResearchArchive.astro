@@ -1,0 +1,23 @@
+---
+import { researchAreas, researchPapers, type ResearchAreaId } from "@/data/research-papers";
+const { areaIds = researchAreas.map((area) => area.id), showAreaHeadings = true } = Astro.props as { areaIds?: ResearchAreaId[]; showAreaHeadings?: boolean };
+const years = [2026,2025,2024] as const;
+const selectedAreas = researchAreas.filter((area) => areaIds.includes(area.id));
+---
+<div class="research-tools"><label><span class="sr-only">Filter research papers</span><input type="search" placeholder="Filter by title, author, or topic…" data-paper-query /></label><div class="research-year-filter" aria-label="Filter by publication year"><button class="active" type="button" data-paper-year="all">All years</button>{years.map((year)=><button type="button" data-paper-year={year}>{year}</button>)}</div></div>
+<p class="research-result-count" data-paper-count>{researchPapers.filter((paper)=>areaIds.includes(paper.area)).length} papers</p>
+<div class="research-archive" data-paper-archive>
+  {selectedAreas.map((area) => <section class="research-area" data-paper-area>{showAreaHeadings && <header><span>{String(researchAreas.findIndex((item)=>item.id===area.id)+1).padStart(2,"0")}</span><div><h2>{area.name}</h2><p>{area.description}</p></div></header>}{years.map((year) => { const papers = researchPapers.filter((paper)=>paper.area===area.id&&paper.year===year); return <section class="research-year" data-paper-year-section={year}><header><h3>{year}</h3><span>{papers.length} papers</span></header><div>{papers.map((paper)=><article data-paper-card data-year={paper.year} data-search={`${paper.title} ${paper.authors} ${paper.topics.join(" ")}`.toLowerCase()}><div class="paper-meta"><span>{paper.source}</span><time datetime={paper.published}>{paper.published}</time></div><h4>{paper.title}</h4><p class="paper-authors">{paper.authors}</p><p class="paper-summary">{paper.summary}</p><div class="paper-topics">{paper.topics.map((topic)=><span>{topic}</span>)}</div><div class="paper-links"><a href={paper.abstractUrl} target="_blank" rel="noreferrer">Abstract ↗</a><a href={paper.paperUrl} target="_blank" rel="noreferrer">Read paper ↗</a></div></article>)}</div></section>})}</section>)}
+</div>
+<div class="library-empty" data-paper-empty hidden><b>No matching papers.</b><span>Try a broader title, author, topic, or year.</span></div>
+<script>
+  const paperCards = [...document.querySelectorAll('[data-paper-card]')];
+  const paperYears = [...document.querySelectorAll('[data-paper-year]')];
+  const paperQuery = document.querySelector('[data-paper-query]');
+  const paperCount = document.querySelector('[data-paper-count]');
+  const paperEmpty = document.querySelector('[data-paper-empty]');
+  let selectedYear = 'all';
+  const filterPapers = () => { const query = paperQuery instanceof HTMLInputElement ? paperQuery.value.trim().toLowerCase() : ''; let visible = 0; paperCards.forEach((card) => { if (!(card instanceof HTMLElement)) return; const show = (selectedYear==='all'||card.dataset.year===selectedYear)&&(!query||card.dataset.search?.includes(query)); card.hidden=!show; if(show) visible++; }); document.querySelectorAll('[data-paper-year-section]').forEach((section)=>{ if(!(section instanceof HTMLElement))return; section.hidden=!section.querySelector('[data-paper-card]:not([hidden])'); }); document.querySelectorAll('[data-paper-area]').forEach((section)=>{ if(!(section instanceof HTMLElement))return; section.hidden=!section.querySelector('[data-paper-card]:not([hidden])'); }); if(paperCount)paperCount.textContent=`${visible} paper${visible===1?'':'s'}`; if(paperEmpty instanceof HTMLElement)paperEmpty.hidden=visible!==0; };
+  paperYears.forEach((button)=>button.addEventListener('click',()=>{ if(!(button instanceof HTMLButtonElement))return; selectedYear=button.dataset.paperYear||'all'; paperYears.forEach((item)=>item.classList.toggle('active',item===button)); filterPapers(); }));
+  paperQuery?.addEventListener('input',filterPapers);
+</script>

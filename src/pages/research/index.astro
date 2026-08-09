@@ -1,0 +1,9 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ResearchArchive from "@/components/research/ResearchArchive.astro";
+import { researchAreas, researchPapers } from "@/data/research-papers";
+import { sitePath } from "@/utils/paths";
+---
+<BaseLayout title="Research Papers — DistillSys" description="A static, curated index of recent systems and AI research papers organized by area and publication year.">
+  <main id="main-content" class="research-main"><header class="research-hero"><span class="eyebrow">Research index · 2024–2026</span><h1>Track the ideas<br/>shaping systems.</h1><p>A curated starting point for recent work in distributed systems, cloud computing, databases, storage systems, and artificial intelligence. Every entry links to its source abstract and paper.</p><div><b>{researchPapers.length}</b><span>papers</span><b>{researchAreas.length}</b><span>research areas</span><b>3</b><span>publication years</span></div></header><nav class="research-area-nav" aria-label="Research areas">{researchAreas.map((area)=><a href={sitePath(`/research/${area.id}/`)}><span>{area.name}</span><small>{researchPapers.filter((paper)=>paper.area===area.id).length} papers →</small></a>)}</nav><aside class="research-note"><b>First-release scope</b><p>This is a selective static index, not an exhaustive bibliography. Publication year follows the source record; many entries are preprints and may not yet be peer reviewed. Last curated August 2026.</p></aside><ResearchArchive /></main>
+</BaseLayout>
