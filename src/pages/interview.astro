@@ -77,5 +77,10 @@ const scenarios = interviewQuestions.filter((item) => item.type === "scenario").
     categorySelect?.addEventListener('change', applyFilters);
     typeSelect?.addEventListener('change', applyFilters);
     queryInput?.addEventListener('input', applyFilters);
+    const initialLevel = new URLSearchParams(window.location.search).get('level')?.toLowerCase();
+    if (initialLevel) {
+      const initialButton = levelButtons.find((button) => button instanceof HTMLButtonElement && button.dataset.level === initialLevel);
+      if (initialButton instanceof HTMLButtonElement) initialButton.click();
+    }
   </script>
 </BaseLayout>
