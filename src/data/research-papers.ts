@@ -1,3 +1,5 @@
+import { industryResearchPapers } from "./industry-research-papers";
+
 export const researchAreas = [
   { id:"distributed-systems", name:"Distributed Systems", description:"Consensus, replication, decentralization, fault tolerance, and distributed coordination." },
   { id:"cloud-computing", name:"Cloud Computing", description:"Cloud-native platforms, serverless systems, scheduling, resource management, and edge computing." },
@@ -7,7 +9,7 @@ export const researchAreas = [
 ] as const;
 
 export type ResearchAreaId = typeof researchAreas[number]["id"];
-export type ResearchPaper = { area: ResearchAreaId; year: 2024|2025|2026; title: string; authors: string; published: string; summary: string; topics: string[]; abstractUrl: string; paperUrl: string; source: string };
+export type ResearchPaper = { area: ResearchAreaId; year: 2024|2025|2026; title: string; authors: string; published: string; summary: string; topics: string[]; abstractUrl: string; paperUrl: string; source: string; industry?: string[]; citations?: number };
 
 const unsortedResearchPapers = [
   {area:"distributed-systems",year:2026,title:"Diagnosing High-Performance BFT Consensus via Mixture Modeling of Block Time Distributions",authors:"Hongru He · Akihiro Fujihara",published:"2026-08-03",summary:"Models quorum-formation latency and multimodal block-time distributions to diagnose heterogeneous network behavior in HotStuff-based BFT systems.",topics:["BFT","consensus","observability"],abstractUrl:"https://arxiv.org/abs/2608.01934",paperUrl:"https://arxiv.org/pdf/2608.01934",source:"arXiv"},
@@ -46,6 +48,7 @@ const unsortedResearchPapers = [
   {area:"artificial-intelligence",year:2024,title:"Titans: Learning to Memorize at Test Time",authors:"Ali Behrouz · Peilin Zhong · Vahab Mirrokni",published:"2024-12-31",summary:"Adds a neural long-term memory module that learns at inference time and complements attention's short-term context.",topics:["memory","architecture","long context"],abstractUrl:"https://arxiv.org/abs/2501.00663",paperUrl:"https://arxiv.org/pdf/2501.00663",source:"arXiv"},
 ] satisfies ResearchPaper[];
 
-export const researchPapers = [...unsortedResearchPapers].sort((a,b) => b.year-a.year || b.published.localeCompare(a.published) || a.title.localeCompare(b.title));
+const allResearchPapers: ResearchPaper[] = [...unsortedResearchPapers, ...industryResearchPapers];
+export const researchPapers: ResearchPaper[] = [...new Map(allResearchPapers.map((paper) => [`${paper.area}:${paper.title.toLowerCase()}`, paper])).values()].sort((a,b) => b.year-a.year || b.published.localeCompare(a.published) || a.title.localeCompare(b.title));
 
 export const papersForArea = (area: ResearchAreaId) => researchPapers.filter((paper) => paper.area === area);
