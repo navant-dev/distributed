@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import { sitePath } from "@/utils/paths";
 import { systemDesigns } from "@/data/system-designs";
 import { researchPapers, researchAreas } from "@/data/research-papers";
+import { scenarios } from "@/data/scenarios";
 
 export const GET: APIRoute = async () => {
   const topics = await getCollection("topics");
@@ -37,6 +38,14 @@ export const GET: APIRoute = async () => {
     tags: design.concepts.map((concept) => concept.label),
     summary: [...design.coreFlow, ...design.components.map((component) => component.responsibility), ...design.failures.map((failure) => `${failure.scenario} ${failure.response}`)].join(" "),
     url: sitePath(`/system-designs/${design.slug}/`),
+  }));
+  scenarios.forEach((scenario) => index.push({
+    title: scenario.title,
+    description: scenario.summary,
+    category: "Scenario Lab",
+    tags: [scenario.category, scenario.level, scenario.role, ...scenario.related.map((item) => item.label)],
+    summary: `${scenario.context.business} ${scenario.context.architecture} ${scenario.context.invariant} ${scenario.response.diagnosis}`,
+    url: sitePath(`/scenarios/${scenario.slug}/`),
   }));
   researchPapers.forEach((paper) => index.push({
     title: paper.title,
