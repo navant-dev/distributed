@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { scenarios, scenarioLevels } from "@/data/scenarios";
+import { sitePath } from "@/utils/paths";
+const categories = [...new Set(scenarios.map((scenario) => scenario.category))];
+---
+<BaseLayout title="Distributed Systems Scenario Lab — DistillSys" description="Practice realistic distributed-systems incidents through diagnosis, mitigation, recovery, and prevention.">
+  <main id="main-content" class="scenario-library-main">
+    <header class="scenario-library-hero"><span class="eyebrow">Applied reasoning · Scenario Lab</span><h1>Make the call<br/>under pressure.</h1><p>Work through realistic incidents with incomplete evidence and competing constraints. Each exercise asks you to diagnose the failure, stabilize the system, recover safely, and prevent recurrence.</p><div><b>{scenarios.length}</b><span>deep scenarios</span><b>4</b><span>reasoning phases</span><b>10</b><span>rubric points each</span></div></header>
+    <aside class="scenario-how"><b>Use the lab, don’t just read it</b><ol><li>Set a timer and state the protected invariant.</li><li>Write your decisions before revealing the response.</li><li>Score the evidence in your answer—not whether your wording matches.</li></ol></aside>
+    <section class="scenario-library" data-scenario-library aria-labelledby="scenario-library-title">
+      <header><div><span class="eyebrow">Scenario library</span><h2 id="scenario-library-title">Choose an incident</h2></div><label><span class="sr-only">Search scenarios</span><input type="search" placeholder="Search failures, concepts, or roles…" data-scenario-query /></label></header>
+      <div class="scenario-filters" aria-label="Filter scenarios"><button class="active" type="button" data-scenario-level="all">All <span>{scenarios.length}</span></button>{scenarioLevels.map((level)=><button type="button" data-scenario-level={level.toLowerCase()}>{level} <span>{scenarios.filter((item)=>item.level===level).length}</span></button>)}<label>Area<select data-scenario-category><option value="all">All areas</option>{categories.map((category)=><option value={category.toLowerCase()}>{category}</option>)}</select></label></div>
+      <p class="scenario-count" data-scenario-count>Showing {scenarios.length} scenarios</p>
+      <div class="scenario-grid">{scenarios.map((scenario,index)=><article data-scenario-card data-scenario-slug={scenario.slug} data-level={scenario.level.toLowerCase()} data-category={scenario.category.toLowerCase()} data-search={`${scenario.title} ${scenario.summary} ${scenario.category} ${scenario.role} ${scenario.related.map((item)=>item.label).join(" ")}`.toLowerCase()}><div class="scenario-card-meta"><span>{String(index+1).padStart(2,"0")}</span><div><b>{scenario.level}</b><small>{scenario.duration} min</small><i data-scenario-status>Not started</i></div></div><p class="scenario-category">{scenario.category} · {scenario.role}</p><h3>{scenario.title}</h3><p>{scenario.summary}</p><div class="scenario-skills">{scenario.related.slice(0,3).map((item)=><span>{item.label}</span>)}</div><a href={sitePath(`/scenarios/${scenario.slug}/`)}>Enter scenario →</a></article>)}</div>
+      <div class="library-empty" data-scenario-empty hidden><b>No matching scenarios.</b><span>Try another level, area, or search phrase.</span></div>
+    </section>
+  </main>
+  <script>
+    const library = document.querySelector('[data-scenario-library]');
+    const cards = [...(library?.querySelectorAll('[data-scenario-card]') ?? [])];
+    const buttons = [...(library?.querySelectorAll('[data-scenario-level]') ?? [])];
+    const category = library?.querySelector('[data-scenario-category]');
+    const query = library?.querySelector('[data-scenario-query]');
+    const count = library?.querySelector('[data-scenario-count]');
+    const empty = library?.querySelector('[data-scenario-empty]');
+    let level = 'all';
+    const filter = () => { const selectedCategory = category instanceof HTMLSelectElement ? category.value : 'all'; const text = query instanceof HTMLInputElement ? query.value.trim().toLowerCase() : ''; let visible=0; cards.forEach((card)=>{ if(!(card instanceof HTMLElement))return; const show=(level==='all'||card.dataset.level===level)&&(selectedCategory==='all'||card.dataset.category===selectedCategory)&&(!text||card.dataset.search?.includes(text)); card.hidden=!show; if(show)visible++; }); if(count)count.textContent=`Showing ${visible} scenario${visible===1?'':'s'}`; if(empty instanceof HTMLElement)empty.hidden=visible!==0; };
+    buttons.forEach((button)=>button.addEventListener('click',()=>{ if(!(button instanceof HTMLButtonElement))return; level=button.dataset.scenarioLevel??'all'; buttons.forEach((item)=>item.classList.toggle('active',item===button)); filter(); }));
+    category?.addEventListener('change',filter); query?.addEventListener('input',filter);
+    try { const completed=JSON.parse(localStorage.getItem('distillsys-scenarios')||'[]'); cards.forEach((card)=>{if(!(card instanceof HTMLElement)||!completed.includes(card.dataset.scenarioSlug))return;card.classList.add('completed');const status=card.querySelector('[data-scenario-status]');if(status)status.textContent='Completed ✓';}); } catch {}
+  </script>
+</BaseLayout>
