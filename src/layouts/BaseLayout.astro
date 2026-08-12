@@ -55,5 +55,6 @@ const socialImage = new URL(sitePath(image), Astro.site);
       const updateProgress = () => { const completed = JSON.parse(localStorage.getItem('distillsys-read') || '[]'); const bar = document.querySelector('[data-progress-bar]'); const label = document.querySelector('[data-progress-label]'); if (bar instanceof HTMLProgressElement) { bar.value = completed.length; if (label) label.textContent = `${Math.round((completed.length / bar.max) * 100)}%`; } };
       updateProgress(); window.addEventListener('distillsys-progress', updateProgress);
     </script>
+    {import.meta.env.PROD && <script is:inline type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"a8ace41eca51418a8d33a6ec84f65a1e"}'></script>}
   </body>
 </html>
