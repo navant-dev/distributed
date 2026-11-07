@@ -1,0 +1,30 @@
+---
+title: "RPCs, Deadlines & Cancellation"
+description: "Turn remote calls into bounded work by propagating time budgets and stopping work that no longer matters."
+category: "Foundations"
+order: 6
+difficulty: "fundamental"
+readingTime: 6
+tags: ["RPC", "deadlines", "cancellation", "timeouts"]
+related: ["reliability/partial-failures", "reliability/failure-retry-patterns", "transactions/idempotent-workflows"]
+featured: true
+diagram: "fundamentals"
+mentalModel: "One user request carries one shrinking time budget through the entire call graph."
+remember: "A timeout frees the caller; cancellation is what stops abandoned work downstream."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="An RPC looks like a local function call but crosses independent processes, queues, networks, and failure domains. A deadline states when the result stops being useful; cancellation asks every layer to stop spending resources after that point."
+  problem="Independent per-hop timeouts can exceed the user's total budget and leave abandoned work running. Under load, that wasted work consumes the exact capacity needed for recovery."
+  insightTitle="Budget time end to end"
+  insight="Start with the caller's deadline, reserve time for recovery, and pass the remaining budget—not a fresh timeout—to every dependency."
+  steps={["Assign the request an absolute deadline and stable operation ID.","Propagate the remaining budget across RPC metadata.","Reject work that cannot finish before its deadline.","Cooperatively cancel queued, running, and downstream work.","Make retries safe because cancellation and completion may race."]}
+  tradeoffs={[{choice:"Short deadline",gain:"Bounds latency and resource use",cost:"More false timeouts"},{choice:"Long deadline",gain:"More slow successes",cost:"Larger queues and recovery time"},{choice:"Hedged request",gain:"Reduces tail latency",cost:"Extra load and duplicate execution"}]}
+  failureTitle="The caller leaves but work continues"
+  failure="A timed-out request keeps database queries, model inference, and downstream RPCs running. New requests queue behind results nobody can use, creating a positive feedback loop."
+  systems={["gRPC and service meshes","Database drivers","Workflow engines","AI inference gateways"]}
+  question="Should every downstream call receive the same timeout?"
+  answer="No. Each call receives the remaining end-to-end budget, often minus a small reserve. Parallel branches may share the budget; sequential calls must consume it. The deadline is a product contract, not a per-library default."
+  leaderQuestions={["Which requests continue after callers disconnect?","Where is cancellation ignored?","How much budget is reserved for fallback?","Are retry attempts inside one total deadline?"]}
+/>

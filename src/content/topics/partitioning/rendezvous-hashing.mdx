@@ -1,0 +1,30 @@
+---
+title: "Rendezvous Hashing"
+description: "Assign keys to nodes with minimal movement, simple ranking, and natural support for replicas and capacity weights."
+category: "Partitioning"
+order: 16
+difficulty: "intermediate"
+readingTime: 6
+tags: ["rendezvous hashing", "HRW", "placement", "rebalancing"]
+related: ["partitioning/consistent-hashing", "partitioning/rebalancing", "partitioning/hot-partitions"]
+featured: false
+diagram: "hash-ring"
+mentalModel: "Every key independently ranks the same node list; the highest-scoring eligible nodes own it."
+remember: "Rendezvous hashing removes the ring, not the need for membership consistency or hot-key handling."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Highest Random Weight, or rendezvous hashing, computes a deterministic score for each key-node pair. The node with the highest score owns the key; the next scores provide replica placement."
+  problem="Modulo hashing remaps most keys when membership changes. Ring-based hashing limits movement but introduces tokens, virtual nodes, and ring-management complexity."
+  insightTitle="Rank instead of walk"
+  insight="If every participant uses the same membership and hash function, it independently derives the same ordered owner list without maintaining a token ring."
+  steps={["Combine the key and each eligible node ID.","Hash each pair into a stable score.","Apply capacity or locality weighting if needed.","Choose the top score for primary ownership.","Choose the next distinct failure domains for replicas."]}
+  tradeoffs={[{choice:"Score every node",gain:"Simple and exact placement",cost:"O(nodes) lookup"},{choice:"Candidate subsets",gain:"Faster large-fleet lookup",cost:"More design complexity"},{choice:"Weighted scores",gain:"Capacity-aware balance",cost:"Weight changes move data"}]}
+  failureTitle="Membership views disagree"
+  failure="Two clients rank different node sets and route the same key to different owners. Deterministic hashing cannot compensate for inconsistent membership or stale failure-domain metadata."
+  systems={["CDN caches","Sharded services","Storage placement","Load balancers"]}
+  question="When would you prefer rendezvous hashing over a hash ring?"
+  answer="When the node set is modest, ranking simplicity matters, or replica selection and weighted placement are first-class. Rings can be preferable when node counts are enormous and optimized lookup structures already exist."
+  leaderQuestions={["Who publishes membership?","How are failure domains encoded?","What movement follows a weight change?","Can one hot key be split independently?"]}
+/>

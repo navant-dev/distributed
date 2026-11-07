@@ -1,0 +1,30 @@
+---
+title: "Distributed Caching"
+description: "Reduce latency and origin load while making staleness, invalidation, and failure behavior explicit."
+category: "Storage"
+order: 26
+difficulty: "intermediate"
+readingTime: 7
+tags: ["cache", "invalidation", "stampede", "TTL"]
+related: ["partitioning/consistent-hashing", "replication/replication", "reliability/load-shedding"]
+featured: true
+diagram: "replication"
+mentalModel: "A cache is a bounded, disposable replica with a deliberately weaker freshness contract."
+remember: "Cache hit rate is not the goal; useful latency, origin protection, and bounded staleness are."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Distributed caches keep derived or copied data near readers. Their value comes from a clear freshness contract, stable key design, bounded memory, and predictable behavior when cached data or the cache fleet disappears."
+  problem="Without caching, popular reads overload origins. With careless caching, stale data violates invariants, hot keys stampede the origin, and cache failure becomes a fleet-wide incident."
+  insightTitle="Design the miss path first"
+  insight="Assume the cache can vanish. Bound concurrent fills, preserve origin capacity, and decide which data may be stale before optimizing hit rate."
+  steps={["Classify data by freshness and safety requirements.","Choose cache-aside, read-through, or write-through deliberately.","Set TTLs with jitter and explicit invalidation where needed.","Coalesce misses and protect origins with concurrency limits.","Measure latency and origin work by hit, miss, stale, and error path."]}
+  tradeoffs={[{choice:"Long TTL",gain:"Higher hit rate",cost:"More staleness"},{choice:"Explicit invalidation",gain:"Faster freshness",cost:"Lost or reordered invalidations"},{choice:"Serve stale",gain:"Availability during failure",cost:"Weaker consistency"}]}
+  failureTitle="A popular key expires everywhere"
+  failure="Thousands of requests miss simultaneously and regenerate the same value, overwhelming the database. Request coalescing, soft TTLs, jitter, and stale-while-revalidate limit the stampede."
+  systems={["API response caches","Feature stores","Session caches","Model artifact caches"]}
+  question="When should a cache fail open versus fail closed?"
+  answer="Fail open with stale data only when the product invariant allows it. Authorization, balances, and revocation often fail closed; feeds and recommendations can usually serve bounded stale results."
+  leaderQuestions={["Which data must never be stale?","Can the origin survive a cold cache?","Who owns invalidation correctness?","What is the hot-key escape path?"]}
+/>

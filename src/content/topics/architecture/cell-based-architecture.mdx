@@ -1,0 +1,30 @@
+---
+title: "Cell-Based Architecture"
+description: "Scale and contain failures by placing users and dependencies into repeatable, mostly independent slices."
+category: "Architecture"
+order: 41
+difficulty: "advanced"
+readingTime: 8
+tags: ["cells", "blast radius", "multi-tenant", "resilience"]
+related: ["architecture/active-active", "architecture/geo-replication", "partitioning/rebalancing"]
+featured: true
+diagram: "resilience"
+mentalModel: "Build a small complete system, stamp it out, and route each tenant to one bounded failure domain."
+remember: "A cell shrinks blast radius only when data, capacity, dependencies, deployment, and control paths are genuinely isolated."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A cell is a repeatable slice of the service stack serving a bounded tenant or key cohort. Cells limit failure impact, make capacity incremental, and provide a unit for deployment, evacuation, and compliance."
+  problem="Large shared fleets turn bad releases, overload, corrupted state, and dependency failure into global incidents. Scaling the same shared tier increases both capacity and blast radius."
+  insightTitle="Scale by replication of architecture"
+  insight="Instead of making one fleet indefinitely larger, make a complete bounded unit repeatable and keep the control plane out of its request path."
+  steps={["Define the tenant or key placement unit.","Bundle compute, queues, caches, and data ownership into a cell.","Route through a stable placement directory.","Keep cell-local failures and deployments independent.","Design evacuation and rebalancing as explicit workflows."]}
+  tradeoffs={[{choice:"Small cells",gain:"Smaller blast radius",cost:"More operational objects"},{choice:"Shared services",gain:"Lower cost",cost:"Hidden cross-cell coupling"},{choice:"Tenant pinning",gain:"Clear ownership",cost:"Hot-tenant imbalance"}]}
+  failureTitle="The global control plane becomes the data plane"
+  failure="Every request synchronously queries the placement service. Its outage now stops every cell. Cache placement with epochs and keep existing routes operating during control-plane failure."
+  systems={["Large SaaS platforms","Regional services","Regulated workloads","AI serving fleets"]}
+  question="What makes a cell different from an availability zone?"
+  answer="A zone is infrastructure geography. A cell is an application isolation and ownership boundary that may span zones. Multiple cells can exist in one region, each with bounded tenants, data, and capacity."
+  leaderQuestions={["Which dependencies remain global?","How are tenants placed and evacuated?","What is the maximum cell blast radius?","Can a deployment target one cell first?"]}
+/>
