@@ -1,0 +1,30 @@
+---
+title: "Leases & Fencing Tokens"
+description: "Grant temporary authority without allowing a paused or partitioned former owner to corrupt shared state."
+category: "Consensus"
+order: 11
+difficulty: "advanced"
+readingTime: 7
+tags: ["leases", "fencing", "coordination", "clock safety"]
+related: ["consensus/leader-election", "foundations/time-ordering", "consensus/raft"]
+featured: true
+diagram: "quorum"
+mentalModel: "A lease suggests who owns authority; a fencing token lets the resource reject everyone older."
+remember: "A lock service cannot revoke a process that is paused. The protected resource must reject stale authority."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A lease grants authority for a bounded interval. Because a holder may pause, lose connectivity, and resume after expiry, safe systems pair leases with monotonically increasing fencing tokens checked by the protected resource."
+  problem="Two workers can both believe they own a resource when one pauses past expiration or cannot observe renewal failure. Local clocks and process health cannot prove exclusivity."
+  insightTitle="Make authority comparable"
+  insight="Every new owner gets a larger token. Storage accepts a mutation only when its token is at least the highest token already observed."
+  steps={["Acquire authority from a strongly consistent coordinator.","Receive an increasing epoch or fencing token.","Attach that token to every protected mutation.","Have the resource reject stale tokens.","Renew for liveness, but rely on fencing for safety."]}
+  tradeoffs={[{choice:"Short lease",gain:"Fast failover",cost:"More false expiry"},{choice:"Long lease",gain:"Fewer renewals",cost:"Slower recovery"},{choice:"Fencing",gain:"Rejects stale owners",cost:"Every resource must participate"}]}
+  failureTitle="A paused owner wakes up"
+  failure="Worker A pauses after acquiring lease 41. Worker B obtains lease 42 and begins work. A resumes and writes successfully unless the resource compares fencing tokens."
+  systems={["Schedulers","Metadata leaders","Distributed locks","Object-store writers"]}
+  question="Why is a distributed lock alone insufficient?"
+  answer="The coordinator can grant a new lock, but it cannot erase the old holder's memory or stop its network requests. Safety requires the resource receiving mutations to distinguish new authority from stale authority."
+  leaderQuestions={["Which resources validate the epoch?","What happens at external APIs that cannot fence?","What pause duration is assumed?","How is authority audited during incidents?"]}
+/>

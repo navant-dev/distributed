@@ -4,6 +4,18 @@ import Sidebar from "@/components/layout/Sidebar.astro";
 import ArchitectureDiagram from "@/components/diagrams/ArchitectureDiagram.astro";
 import { sitePath } from "@/utils/paths";
 const { title, description, category, difficulty, readingTime, tags, diagram, mentalModel, remember, slug, previous, next, relatedTopics = [] } = Astro.props;
+const productionLens: Record<string,string> = {
+  Foundations: "Trace deadlines, identity, and uncertainty across every network boundary—especially when agents and long-running workflows call multiple services.",
+  Consistency: "Name the user-visible invariant first. Then choose the weakest consistency contract that preserves it under partitions and regional failure.",
+  Replication: "Measure acknowledged-write watermarks and repair lag, not just replica count or seconds behind primary.",
+  Consensus: "Treat disk stalls, runtime pauses, and tail latency as protocol inputs; quorum health is an end-to-end systems property.",
+  Partitioning: "Plan for concentrated tenants and hot keys. Balanced key counts rarely imply balanced compute, storage, or network load.",
+  Transactions: "Draw the real atomic boundary. External APIs require operation identity, reconciliation, and compensation beyond database transactions.",
+  Storage: "Model the full data lifecycle: write path, amplification, cache residency, background maintenance, recovery, and cost per useful request.",
+  Messaging: "Design for replay, schema change, backlog recovery, and duplicate business effects—not only steady-state throughput.",
+  Reliability: "Protect useful throughput with bounded work, isolation, and explicit degradation before adding capacity or retries.",
+  Architecture: "Partition blast radius and authority together. Global reach should not turn one fault or tenant into a fleet-wide event.",
+};
 ---
 <BaseLayout title={`${title} — DistillSys`} description={description}>
   <div class="docs-shell">
@@ -18,6 +30,7 @@ const { title, description, category, difficulty, readingTime, tags, diagram, me
         </header>
         <ArchitectureDiagram type={diagram} />
         <section class="mental-model"><span>Mental model</span><p>{mentalModel}</p></section>
+        <aside class="production-lens"><span>2026 production lens</span><p>{productionLens[category]}</p></aside>
         <div class="mdx-content"><slot /></div>
         <aside class="remember-this"><span>Remember this</span><p>{remember}</p></aside>
         <div class="topic-tags">{tags.map((tag: string) => <span>#{tag}</span>)}</div>

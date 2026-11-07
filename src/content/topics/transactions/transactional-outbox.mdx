@@ -1,0 +1,30 @@
+---
+title: "Transactional Outbox"
+description: "Publish events reliably by committing business state and message intent in one local transaction."
+category: "Transactions"
+order: 21
+difficulty: "intermediate"
+readingTime: 7
+tags: ["outbox", "CDC", "events", "dual writes"]
+related: ["transactions/idempotent-workflows", "messaging/delivery-semantics", "messaging/distributed-logs"]
+featured: true
+diagram: "two-phase"
+mentalModel: "Commit the fact and the promise to publish together; deliver the promise asynchronously."
+remember: "The outbox prevents lost intent, not duplicate delivery. Consumers still need idempotency."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="A service writes its domain change and an outbox row in the same database transaction. A relay or change-data-capture pipeline later publishes the row to the broker and marks progress."
+  problem="Writing a database and broker separately creates a dual-write gap: either the state commits without its event or the event publishes without the state."
+  insightTitle="Move the atomic boundary"
+  insight="Do not make the broker part of the transaction. Atomically record durable intent locally, then make delivery repeatable and observable."
+  steps={["Begin the local database transaction.","Write the domain state and immutable outbox record.","Commit them together.","Relay unpublished records with stable event IDs.","Publish at least once and let consumers deduplicate."]}
+  tradeoffs={[{choice:"Polling relay",gain:"Portable and simple",cost:"Polling latency and load"},{choice:"CDC relay",gain:"Low-latency ordered capture",cost:"Operational coupling to logs"},{choice:"Delete after send",gain:"Small table",cost:"Harder audit and replay"}]}
+  failureTitle="Publish succeeds before acknowledgement"
+  failure="The broker accepts an event, but the relay crashes before recording progress. The event is published again after restart; without consumer idempotency the business effect repeats."
+  systems={["Order services","Payment workflows","Cache invalidation","Audit pipelines"]}
+  question="Does an outbox provide exactly-once delivery?"
+  answer="No. It provides atomic state-plus-intent and normally at-least-once publication. Exactly-once business outcomes still require stable event identity, idempotent consumers, and careful handling of external effects."
+  leaderQuestions={["What is the relay backlog SLO?","How long are outbox records retained?","Can schema changes be replayed safely?","Who owns poison events?"]}
+/>

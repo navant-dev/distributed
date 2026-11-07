@@ -1,0 +1,30 @@
+---
+title: "Event Schema Evolution"
+description: "Change event contracts safely while old producers, new consumers, retained logs, and replay coexist."
+category: "Messaging"
+order: 31
+difficulty: "intermediate"
+readingTime: 7
+tags: ["schemas", "compatibility", "events", "replay"]
+related: ["messaging/distributed-logs", "messaging/delivery-semantics", "transactions/transactional-outbox"]
+featured: false
+diagram: "distributed-log"
+mentalModel: "An event contract must survive versions moving independently in both time directions."
+remember: "A schema is compatible only if deployed consumers—and future replays—can interpret it correctly."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Event producers and consumers deploy independently, while retained events may be replayed months later. Schema evolution defines how fields, meanings, defaults, and versions change without coordinated downtime."
+  problem="A field rename or semantic change can break live consumers, corrupt projections during replay, or silently change the meaning of historical data."
+  insightTitle="Compatibility includes meaning"
+  insight="Wire compatibility prevents parse failures; semantic compatibility prevents correct-looking but wrong business behavior."
+  steps={["Define an owned contract and compatibility policy.","Prefer additive optional fields with safe defaults.","Deploy tolerant readers before new writers.","Version semantic breaks explicitly rather than reusing fields.","Test new consumers against retained historical samples and replay."]}
+  tradeoffs={[{choice:"Backward compatible",gain:"New readers handle old data",cost:"Defaults preserve legacy meaning"},{choice:"Forward compatible",gain:"Old readers tolerate new data",cost:"Unknown fields must be ignorable"},{choice:"New event type",gain:"Clean semantic boundary",cost:"Migration and dual consumption"}]}
+  failureTitle="A field keeps its type but changes meaning"
+  failure="amount remains an integer but changes from cents to micros. Every schema check passes while consumers calculate values incorrectly. Semantic versioning and contract tests must cover units and invariants."
+  systems={["Kafka contracts","CDC streams","Data lakes","Workflow events"]}
+  question="Is adding an optional field always safe?"
+  answer="Only syntactically. A default can still change behavior, validation, ordering, privacy, or downstream storage. Compatibility requires testing real consumers and historical replay, not only the schema registry."
+  leaderQuestions={["Who owns each event contract?","How far back must replay work?","Where are semantic invariants tested?","How are sensitive fields governed?"]}
+/>

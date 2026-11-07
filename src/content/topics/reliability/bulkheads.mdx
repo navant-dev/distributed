@@ -1,0 +1,30 @@
+---
+title: "Bulkheads & Fault Isolation"
+description: "Partition resources and blast radius so one tenant, dependency, or workload cannot sink the whole service."
+category: "Reliability"
+order: 36
+difficulty: "intermediate"
+readingTime: 6
+tags: ["bulkheads", "isolation", "blast radius", "fairness"]
+related: ["reliability/circuit-breakers", "reliability/load-shedding", "reliability/partial-failures"]
+featured: true
+diagram: "resilience"
+mentalModel: "Shared capacity shares failure; partitions turn a fleet-wide outage into a bounded local event."
+remember: "Isolation is real only when the scarce resource—threads, connections, memory, queue, or quota—is separate."
+---
+import LessonEssentials from "@/components/content/LessonEssentials.astro";
+
+<LessonEssentials
+  refresher="Bulkheads reserve independent capacity for tenants, priorities, dependencies, or request classes. When one compartment saturates, the rest retain enough resources to serve useful work and recover."
+  problem="A shared thread pool, connection pool, queue, or retry budget lets one slow dependency or noisy tenant consume every worker and create correlated failure."
+  insightTitle="Partition the bottleneck"
+  insight="Separate the resource that actually saturates. Separate code paths with one shared database pool are not isolated."
+  steps={["Identify the scarce resource and failure unit.","Choose isolation dimensions: tenant, dependency, priority, or cell.","Set per-compartment concurrency and queue bounds.","Reserve recovery and control-plane capacity.","Rebalance cautiously using measured demand and fairness policy."]}
+  tradeoffs={[{choice:"Fine isolation",gain:"Small blast radius",cost:"Stranded capacity"},{choice:"Shared overflow",gain:"Higher utilization",cost:"Failures can cross boundaries"},{choice:"Priority reserve",gain:"Protects critical work",cost:"Lower classes shed earlier"}]}
+  failureTitle="The pool is separate, the database is not"
+  failure="Two APIs use independent executors but share one database connection pool. A slow query consumes every connection, so the supposed bulkhead does not contain the failure."
+  systems={["Multi-tenant SaaS","API gateways","Dependency clients","Background job fleets"]}
+  question="How do bulkheads differ from circuit breakers?"
+  answer="A circuit breaker stops calls based on dependency health. A bulkhead limits how much shared capacity those calls can consume. They complement each other: one controls admission, the other contains resource damage."
+  leaderQuestions={["What is the actual shared bottleneck?","How much capacity may be stranded?","Which work receives a reserve?","Can overload cross the isolation boundary?"]}
+/>

@@ -6,7 +6,7 @@ import { sitePath } from "@/utils/paths";
 <BaseLayout title="Distributed Systems Cheatsheets — DistillSys" description="Eight printable distributed-systems decision guides for consistency, consensus, partitioning, transactions, storage, messaging, reliability, and multi-region architecture.">
   <main id="main-content" class="cheatsheet-main">
     <header class="cheatsheet-hero">
-      <div><span class="eyebrow">Eight one-page decision guides</span><h1>Keep the hard parts close.</h1><p>Print the full set, or keep this page open during design reviews. Each sheet compresses one roadmap stage into the rules, sequence, and failure warning worth remembering.</p></div>
+      <div><span class="eyebrow">2026 edition · eight one-page decision guides</span><h1>Keep the hard parts close.</h1><p>Use these during design reviews and incidents. Each sheet compresses one roadmap stage into the invariant, decision sequence, operational signal, and failure warning worth remembering.</p></div>
       <button class="btn btn-primary" type="button" data-print-cheatsheets>Print all cheatsheets <span aria-hidden="true">↗</span></button>
     </header>
     <nav class="cheatsheet-jump" aria-label="Cheatsheet sections">{cheatsheets.map((sheet) => <a href={`#${sheet.id}`}><span>{sheet.number}</span>{sheet.title}</a>)}</nav>
